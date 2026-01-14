@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="14" skipped="0" tests="175" time="87.151" timestamp="2026-01-12T13:03:47.806787" hostname="ubuntu-s-1vcpu-1gb-amd-sgp1-01"><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_a_plus_lower_boundary" time="0.005" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_a_plus_upper_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_a_plus_mid_range" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_a_lower_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_a_upper_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_a_mid_range" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_a_minus_lower_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_a_minus_upper_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_b_plus_lower_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_b_plus_upper_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_b_lower_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_b_upper_boundary" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_b_minus" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_c_plus" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_c" time="0.002" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_c_minus" time="0.001" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_d_lower_boundary" time="0.001" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_d_upper_boundary" time="0.001" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_f_just_below_d" time="0.001" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_f_very_low" time="0.001" /><testcase classname="unit.test_feedback_service.TestCalculateGrade" name="test_grade_boundary_transitions" time="0.002" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_no_phoneme_data_no_words" time="0.002" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_no_phoneme_data_missing_words_key" time="0.001" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_no_phoneme_data_in_words" time="0.001" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_all_good_phoneme_scores" time="0.002" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_some_poor_phoneme_scores" time="0.001" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_many_poor_phonemes_limits_to_three" time="0.001" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_phoneme_at_exact_threshold" time="0.002" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_missing_phoneme_accuracy_scores" time="0.002" /><testcase classname="unit.test_feedback_service.TestAnalyzePhonemes" name="test_empty_phoneme_text" time="0.002" /><testcase classname="unit.test_feedback_service.TestEnhanceFeedback" name="test_with_teacher_notes_provided" time="0.002" /><testcase classname="unit.test_feedback_service.TestEnhanceFeedback" name="test_with_empty_teacher_notes" time="0.002" /><testcase classname="unit.test_feedback_service.TestEnhanceFeedback" name="test_with_whitespace_only_teacher_notes" time="0.002" /><testcase classname="unit.test_feedback_service.TestEnhanceFeedback" name="test_with_multiline_teacher_notes" time="0.002" /><testcase classname="unit.test_feedback_service.TestEnhanceFeedback" name="test_with_very_long_teacher_notes" time="0.002" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_excellent_pronunciation_90_100" time="0.003" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_very_good_pronunciation_80_89" time="0.002" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_good_pronunciation_70_79" time="0.002" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_fair_pronunciation_60_69" time="0.002" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_needs_improvement_50_59" time="0.001" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_poor_pronunciation_below_50" time="0.002" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_missing_assessment_data_empty_dict" time="0.002" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_missing_assessment_data_no_score" time="0.001" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_feedback_includes_strengths_for_high_scores" time="0.001" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_feedback_includes_areas_to_improve_for_low_scores" time="0.001" /><testcase classname="unit.test_feedback_service.TestGenerateFeedback" name="test_feedback_includes_tips_for_different_score_ranges" time="0.002" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_generates_valid_score_structure" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_scores_within_valid_range_0_100" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_scores_within_realistic_range" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_recognized_text_matches_input" time="0.002" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_contains_word_assessments" time="0.002" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_word_assessment_structure" time="0.002" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_phoneme_assessment_structure" time="0.002" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_mock_flag_present" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_handles_multi_word_input" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_handles_empty_string" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_handles_special_characters" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_consistency_of_score_ranges" time="0.006" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_phoneme_count_reasonable" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_error_type_in_word_assessment" time="0.001" /><testcase classname="unit.test_pronunciation_service.TestGetMockAssessment" name="test_all_scores_are_numeric" time="0.002" /><testcase classname="unit.test_pronunciation_service.TestConvertToAzureFormat" name="test_already_correct_format" time="0.022" /><testcase classname="unit.test_pronunciation_service.TestConvertToAzureFormat" name="test_needs_sample_rate_conversion" time="0.013"><failure message="assert 44100 == 16000&#10; +  where 44100 = &lt;pydub.audio_segment.AudioSegment object at 0x7db812b1bfb0&gt;.frame_rate">unit/test_pronunciation_service.py:272: in test_needs_sample_rate_conversion
+    assert audio.frame_rate == 16000  # Should be converted
+E   assert 44100 == 16000
+E    +  where 44100 = &lt;pydub.audio_segment.AudioSegment object at 0x7db812b1bfb0&gt;.frame_rate</failure></testcase><testcase classname="unit.test_pronunciation_service.TestConvertToAzureFormat" name="test_needs_channel_conversion_stereo_to_mono" time="0.020"><failure message="assert 2 == 1&#10; +  where 2 = &lt;pydub.audio_segment.AudioSegment object at 0x7db812b5e450&gt;.channels">unit/test_pronunciation_service.py:295: in test_needs_channel_conversion_stereo_to_mono
+    assert audio.channels == 1  # Should be mono
+E   assert 2 == 1
+E    +  where 2 = &lt;pydub.audio_segment.AudioSegment object at 0x7db812b5e450&gt;.channels</failure></testcase><testcase classname="unit.test_pronunciation_service.TestConvertToAzureFormat" name="test_needs_bit_depth_conversion" time="0.018"><failure message="assert 1 == 2&#10; +  where 1 = &lt;pydub.audio_segment.AudioSegment object at 0x7db812b5ffb0&gt;.sample_width">unit/test_pronunciation_service.py:318: in test_needs_bit_depth_conversion
+    assert audio.sample_width == 2  # Should be 16-bit
+E   assert 1 == 2
+E    +  where 1 = &lt;pydub.audio_segment.AudioSegment object at 0x7db812b5ffb0&gt;.sample_width</failure></testcase><testcase classname="unit.test_pronunciation_service.TestConvertToAzureFormat" name="test_multiple_conversions_needed" time="0.034"><failure message="assert 48000 == 16000&#10; +  where 48000 = &lt;pydub.audio_segment.AudioSegment object at 0x7db812b5daf0&gt;.frame_rate">unit/test_pronunciation_service.py:341: in test_multiple_conversions_needed
+    assert audio.frame_rate == 16000
+E   assert 48000 == 16000
+E    +  where 48000 = &lt;pydub.audio_segment.AudioSegment object at 0x7db812b5daf0&gt;.frame_rate</failure></testcase><testcase classname="unit.test_pronunciation_service.TestConvertToAzureFormat" name="test_creates_temporary_file" time="0.023"><failure message="AssertionError: assert '/tmp/tmprp5ddiji.wav' != '/tmp/tmprp5ddiji.wav'">unit/test_pronunciation_service.py:359: in test_creates_temporary_file
+    assert converted_path != input_path
+E   AssertionError: assert '/tmp/tmprp5ddiji.wav' != '/tmp/tmprp5ddiji.wav'</failure></testcase><testcase classname="unit.test_pronunciation_service.TestConvertToAzureFormat" name="test_handles_nonexistent_file" time="0.003" /><testcase classname="unit.test_pronunciation_service.TestConvertToAzureFormat" name="test_preserves_audio_content" time="0.016" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_correct_password_returns_true" time="0.729" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_incorrect_password_returns_false" time="0.653" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_password_case_sensitivity" time="0.966" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_password_with_special_characters" time="4.068" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_empty_password" time="0.670" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_password_with_spaces" time="1.384" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_very_long_password" time="1.023" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_unicode_password" time="0.717" /><testcase classname="unit.test_security.TestVerifyPassword" name="test_password_with_only_numbers" time="1.043" /><testcase classname="unit.test_security.TestGetPasswordHash" name="test_generates_valid_hash" time="0.348" /><testcase classname="unit.test_security.TestGetPasswordHash" name="test_hash_can_be_verified" time="0.697" /><testcase classname="unit.test_security.TestGetPasswordHash" name="test_different_hashes_for_same_password" time="1.376" /><testcase classname="unit.test_security.TestGetPasswordHash" name="test_hash_consistency_verification" time="3.813" /><testcase classname="unit.test_security.TestGetPasswordHash" name="test_hash_format" time="0.347" /><testcase classname="unit.test_security.TestGetPasswordHash" name="test_empty_password_hash" time="0.657" /><testcase classname="unit.test_security.TestGetPasswordHash" name="test_long_password_hash" time="0.666" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_creates_valid_jwt_token" time="0.007" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_contains_correct_user_id" time="0.003" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_contains_expiration" time="0.002" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_can_be_decoded" time="0.003" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_with_custom_expiration" time="0.003" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_with_additional_claims" time="0.002" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_signature_verification" time="0.002"><failure message="AttributeError: module 'jose.jwt' has no attribute 'InvalidSignatureError'. Did you mean: 'ExpiredSignatureError'?">unit/test_security.py:283: in test_token_signature_verification
+    with pytest.raises(jwt.InvalidSignatureError):
+E   AttributeError: module 'jose.jwt' has no attribute 'InvalidSignatureError'. Did you mean: 'ExpiredSignatureError'?</failure></testcase><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_algorithm_verification" time="0.003"><failure message="AttributeError: module 'jose.jwt' has no attribute 'InvalidAlgorithmError'">../backend/venv/lib/python3.12/site-packages/jose/jwt.py:142: in decode
+    payload = jws.verify(token, key, algorithms, verify=verify_signature)
+../backend/venv/lib/python3.12/site-packages/jose/jws.py:73: in verify
+    _verify_signature(signing_input, header, signature, key, algorithms)
+../backend/venv/lib/python3.12/site-packages/jose/jws.py:257: in _verify_signature
+    raise JWSError("The specified alg value is not allowed")
+E   jose.exceptions.JWSError: The specified alg value is not allowed
+
+During handling of the above exception, another exception occurred:
+unit/test_security.py:297: in test_token_algorithm_verification
+    jwt.decode(token, settings.SECRET_KEY, algorithms=["HS512"])
+../backend/venv/lib/python3.12/site-packages/jose/jwt.py:144: in decode
+    raise JWTError(e)
+E   jose.exceptions.JWTError: The specified alg value is not allowed
+
+During handling of the above exception, another exception occurred:
+unit/test_security.py:301: in test_token_algorithm_verification
+    except jwt.InvalidAlgorithmError:
+E   AttributeError: module 'jose.jwt' has no attribute 'InvalidAlgorithmError'</failure></testcase><testcase classname="unit.test_security.TestCreateAccessToken" name="test_different_users_get_different_tokens" time="0.003" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_header_structure" time="0.002" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_token_expiration_default" time="0.002" /><testcase classname="unit.test_security.TestCreateAccessToken" name="test_expired_token_detection" time="0.003" /><testcase classname="integration.test_recording_submission.TestRecordingSubmissionIntegration" name="test_recording_submission_creates_database_entry" time="0.680" /><testcase classname="integration.test_recording_submission.TestRecordingSubmissionIntegration" name="test_pronunciation_assessment_integration" time="0.514" /><testcase classname="integration.test_recording_submission.TestRecordingSubmissionIntegration" name="test_feedback_generation_integration" time="0.524" /><testcase classname="integration.test_recording_submission.TestRecordingSubmissionIntegration" name="test_complete_submission_flow" time="0.503" /><testcase classname="integration.test_recording_submission.TestMultiTableUpdates" name="test_creates_recording_entry" time="0.531" /><testcase classname="integration.test_recording_submission.TestMultiTableUpdates" name="test_updates_existing_word_assignment" time="0.490" /><testcase classname="integration.test_recording_submission.TestMultiTableUpdates" name="test_creates_new_word_assignment_if_not_exists" time="0.493" /><testcase classname="integration.test_recording_submission.TestMultiTableUpdates" name="test_atomic_transaction_both_tables_updated" time="0.511" /><testcase classname="integration.test_recording_submission.TestMultiTableUpdates" name="test_multiple_submissions_increment_count" time="0.784" /><testcase classname="integration.test_recording_submission.TestProgressCalculationIntegration" name="test_creates_progress_entry_for_first_recording" time="0.534" /><testcase classname="integration.test_recording_submission.TestProgressCalculationIntegration" name="test_updates_existing_progress_entry" time="0.589" /><testcase classname="integration.test_recording_submission.TestProgressCalculationIntegration" name="test_running_average_calculation" time="0.661" /><testcase classname="integration.test_recording_submission.TestProgressCalculationIntegration" name="test_average_score_precision" time="0.500" /><testcase classname="integration.test_word_assignment.TestWordAssignmentDictionaryIntegration" name="test_word_exists_in_dictionary_creates_new" time="0.519" /><testcase classname="integration.test_word_assignment.TestWordAssignmentDictionaryIntegration" name="test_word_exists_in_both_dictionary_and_db_updates" time="0.438" /><testcase classname="integration.test_word_assignment.TestWordAssignmentDictionaryIntegration" name="test_word_not_in_dictionary_rejects" time="0.459" /><testcase classname="integration.test_word_assignment.TestWordAssignmentDictionaryIntegration" name="test_sequential_operations_dictionary_then_database" time="0.637" /><testcase classname="integration.test_word_assignment.TestSubmissionFilteringIntegration" name="test_joins_user_and_recording_data" time="0.816" /><testcase classname="integration.test_word_assignment.TestSubmissionFilteringIntegration" name="test_multiple_students_correct_association" time="1.501" /><testcase classname="integration.test_word_assignment.TestSubmissionFilteringIntegration" name="test_database_join_performance" time="0.775" /><testcase classname="integration.test_word_assignment.TestClassFilteringIntegration" name="test_filter_recordings_by_class" time="1.497" /><testcase classname="integration.test_word_assignment.TestClassFilteringIntegration" name="test_multi_table_join_classes_enrollments_recordings" time="1.183" /><testcase classname="integration.test_word_assignment.TestClassFilteringIntegration" name="test_class_not_owned_by_teacher_returns_404" time="0.813" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_valid_credentials_successful_login" time="0.826" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_invalid_email_login_fails" time="0.069" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_incorrect_password_login_fails" time="0.774" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_missing_email_login_fails" time="0.069" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_missing_password_login_fails" time="0.058" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_malformed_email_login_fails" time="0.059" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_case_sensitive_password" time="0.746" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_jwt_token_can_access_protected_endpoints" time="0.796" /><testcase classname="system.test_authentication_system.TestAuthenticationSystem" name="test_registration_returns_token" time="0.440" /><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_student_can_access_student_endpoints" time="0.410" /><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_teacher_can_access_teacher_endpoints" time="0.434" /><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_student_cannot_access_teacher_endpoints" time="0.432" /><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_teacher_can_access_student_endpoints" time="0.452" /><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_unauthenticated_cannot_access_protected_endpoints" time="0.072"><failure message="assert 403 == 401&#10; +  where 403 = &lt;Response [403 Forbidden]&gt;.status_code">system/test_authentication_system.py:239: in test_unauthenticated_cannot_access_protected_endpoints
+    assert response1.status_code == 401
+E   assert 403 == 401
+E    +  where 403 = &lt;Response [403 Forbidden]&gt;.status_code</failure></testcase><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_invalid_token_denied_access" time="0.070" /><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_expired_token_denied_access" time="0.426" /><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_malformed_authorization_header_denied" time="0.074"><failure message="assert 403 == 401&#10; +  where 403 = &lt;Response [403 Forbidden]&gt;.status_code">system/test_authentication_system.py:273: in test_malformed_authorization_header_denied
+    assert response1.status_code == 401
+E   assert 403 == 401
+E    +  where 403 = &lt;Response [403 Forbidden]&gt;.status_code</failure></testcase><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_role_verification_for_word_assignment" time="0.776" /><testcase classname="system.test_authentication_system.TestRoleBasedAccessControl" name="test_role_persistence_across_requests" time="0.542" /><testcase classname="system.test_student_workflow.TestAudioFileValidation" name="test_valid_wav_file_accepted" time="0.447" /><testcase classname="system.test_student_workflow.TestAudioFileValidation" name="test_valid_mp3_file_accepted" time="0.504" /><testcase classname="system.test_student_workflow.TestAudioFileValidation" name="test_valid_webm_file_accepted" time="0.460" /><testcase classname="system.test_student_workflow.TestAudioFileValidation" name="test_invalid_pdf_file_rejected" time="0.423" /><testcase classname="system.test_student_workflow.TestAudioFileValidation" name="test_invalid_image_file_rejected" time="0.485" /><testcase classname="system.test_student_workflow.TestAudioFileValidation" name="test_invalid_text_file_rejected" time="0.470" /><testcase classname="system.test_student_workflow.TestAudioFileValidation" name="test_content_type_validation" time="0.532" /><testcase classname="system.test_student_workflow.TestProgressStatisticsCalculation" name="test_progress_with_no_recordings" time="0.423" /><testcase classname="system.test_student_workflow.TestProgressStatisticsCalculation" name="test_progress_with_single_recording" time="0.536" /><testcase classname="system.test_student_workflow.TestProgressStatisticsCalculation" name="test_progress_with_multiple_recordings_same_day" time="0.637" /><testcase classname="system.test_student_workflow.TestProgressStatisticsCalculation" name="test_average_score_calculation" time="0.788" /><testcase classname="system.test_student_workflow.TestProgressStatisticsCalculation" name="test_recent_recordings_list" time="0.655" /><testcase classname="system.test_student_workflow.TestProgressStatisticsCalculation" name="test_progress_period_filtering" time="0.595" /><testcase classname="system.test_student_workflow.TestPronunciationScoreValidation" name="test_pronunciation_scores_within_range" time="0.480" /><testcase classname="system.test_student_workflow.TestPronunciationScoreValidation" name="test_multiple_submissions_all_valid_scores" time="0.735" /><testcase classname="system.test_student_workflow.TestAutomaticFeedbackGeneration" name="test_feedback_generated_automatically" time="0.681" /><testcase classname="system.test_student_workflow.TestAutomaticFeedbackGeneration" name="test_grade_assigned_based_on_score" time="0.490" /><testcase classname="system.test_student_workflow.TestAutomaticFeedbackGeneration" name="test_feedback_includes_word_reference" time="0.477" /><testcase classname="system.test_student_workflow.TestAutomaticFeedbackGeneration" name="test_feedback_stored_in_database" time="0.519" /><testcase classname="system.test_student_workflow.TestAutomaticFeedbackGeneration" name="test_multiple_submissions_get_different_feedback" time="0.700" /><testcase classname="system.test_teacher_features.TestTeacherFeedbackOverride" name="test_teacher_provides_new_feedback_text" time="1.024" /><testcase classname="system.test_teacher_features.TestTeacherFeedbackOverride" name="test_teacher_provides_new_grade" time="0.889" /><testcase classname="system.test_teacher_features.TestTeacherFeedbackOverride" name="test_teacher_provides_both_feedback_and_grade" time="0.860" /><testcase classname="system.test_teacher_features.TestTeacherFeedbackOverride" name="test_teacher_flags_for_additional_practice" time="0.854" /><testcase classname="system.test_teacher_features.TestTeacherFeedbackOverride" name="test_automated_feedback_flag_updated" time="0.895" /><testcase classname="system.test_teacher_features.TestSubmissionFiltering" name="test_filter_by_pending_status" time="0.468" /><testcase classname="system.test_teacher_features.TestSubmissionFiltering" name="test_filter_by_reviewed_status" time="0.858" /><testcase classname="system.test_teacher_features.TestSubmissionFiltering" name="test_filter_by_class" time="0.861" /><testcase classname="system.test_teacher_features.TestSubmissionFiltering" name="test_filter_by_status_and_class_combined" time="0.826" /><testcase classname="system.test_teacher_features.TestClassAnalytics" name="test_analytics_total_recordings_count" time="1.149"><failure message="AttributeError: Neither 'Function' object nor 'Comparator' object has an attribute '_static_cache_key'. Did you mean: '_is_has_cache_key'?">../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:1599: in __getattr__
+    return getattr(self.comparator, key)
+E   AttributeError: 'Comparator' object has no attribute '_static_cache_key'
+
+The above exception was the direct cause of the following exception:
+system/test_teacher_features.py:373: in test_analytics_total_recordings_count
+    response = client.get("/api/teacher/analytics", headers=auth_headers_teacher)
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:499: in get
+    return super().get(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:1041: in get
+    return self.request(
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:465: in request
+    return super().request(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:814: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:901: in send
+    response = self._send_handling_auth(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:929: in _send_handling_auth
+    response = self._send_handling_redirects(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:966: in _send_handling_redirects
+    response = self._send_single_request(request)
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:1002: in _send_single_request
+    response = transport.handle_request(request)
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:342: in handle_request
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:339: in handle_request
+    portal.call(self.app, scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/anyio/from_thread.py:277: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/usr/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+/usr/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+../backend/venv/lib/python3.12/site-packages/anyio/from_thread.py:217: in _call_func
+    retval = await retval
+../backend/venv/lib/python3.12/site-packages/fastapi/applications.py:1106: in __call__
+    await super().__call__(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/applications.py:122: in __call__
+    await self.middleware_stack(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py:184: in __call__
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py:162: in __call__
+    await self.app(scope, receive, _send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py:83: in __call__
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:79: in __call__
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:68: in __call__
+    await self.app(scope, receive, sender)
+../backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__
+    raise e
+../backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:718: in __call__
+    await route.handle(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:276: in handle
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:66: in app
+    response = await func(request)
+../backend/venv/lib/python3.12/site-packages/fastapi/routing.py:274: in app
+    raw_response = await run_endpoint_function(
+../backend/venv/lib/python3.12/site-packages/fastapi/routing.py:193: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+../backend/venv/lib/python3.12/site-packages/starlette/concurrency.py:41: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+../backend/venv/lib/python3.12/site-packages/anyio/to_thread.py:33: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(
+../backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:877: in run_sync_in_worker_thread
+    return await future
+../backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:807: in run
+    result = context.run(func, *args)
+../backend/app/api/routes/teacher.py:226: in get_analytics
+    ).scalar()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2825: in scalar
+    ret = self.one()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2798: in one
+    return self._iter().one()  # type: ignore
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2847: in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2308: in execute
+    return self._execute_internal(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2190: in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/context.py:293: in orm_execute_statement
+    result = conn.execute(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1416: in execute
+    return meth(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:516: in _execute_on_connection
+    return connection._execute_clauseelement(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1631: in _execute_clauseelement
+    compiled_sql, extracted_params, cache_hit = elem._compile_w_cache(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:684: in _compile_w_cache
+    elem_cache_key = self._generate_cache_key()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:1273: in oneshot
+    result = fn(self, *args, **kw)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:398: in _generate_cache_key
+    return HasCacheKey._generate_cache_key(self)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:367: in _generate_cache_key
+    key = self._gen_cache_key(_anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:321: in _gen_cache_key
+    elem._gen_cache_key(anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:280: in _gen_cache_key
+    obj._gen_cache_key(anon_map, bindparams),
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:280: in _gen_cache_key
+    obj._gen_cache_key(anon_map, bindparams),
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:321: in _gen_cache_key
+    elem._gen_cache_key(anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:267: in _gen_cache_key
+    sck = obj._static_cache_key
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:1601: in __getattr__
+    raise AttributeError(
+E   AttributeError: Neither 'Function' object nor 'Comparator' object has an attribute '_static_cache_key'. Did you mean: '_is_has_cache_key'?</failure></testcase><testcase classname="system.test_teacher_features.TestClassAnalytics" name="test_analytics_average_score" time="0.982"><failure message="AttributeError: Neither 'Function' object nor 'Comparator' object has an attribute '_static_cache_key'. Did you mean: '_is_has_cache_key'?">../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:1599: in __getattr__
+    return getattr(self.comparator, key)
+E   AttributeError: 'Comparator' object has no attribute '_static_cache_key'
+
+The above exception was the direct cause of the following exception:
+system/test_teacher_features.py:394: in test_analytics_average_score
+    response = client.get("/api/teacher/analytics", headers=auth_headers_teacher)
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:499: in get
+    return super().get(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:1041: in get
+    return self.request(
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:465: in request
+    return super().request(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:814: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:901: in send
+    response = self._send_handling_auth(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:929: in _send_handling_auth
+    response = self._send_handling_redirects(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:966: in _send_handling_redirects
+    response = self._send_single_request(request)
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:1002: in _send_single_request
+    response = transport.handle_request(request)
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:342: in handle_request
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:339: in handle_request
+    portal.call(self.app, scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/anyio/from_thread.py:277: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/usr/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+/usr/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+../backend/venv/lib/python3.12/site-packages/anyio/from_thread.py:217: in _call_func
+    retval = await retval
+../backend/venv/lib/python3.12/site-packages/fastapi/applications.py:1106: in __call__
+    await super().__call__(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/applications.py:122: in __call__
+    await self.middleware_stack(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py:184: in __call__
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py:162: in __call__
+    await self.app(scope, receive, _send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py:83: in __call__
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:79: in __call__
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:68: in __call__
+    await self.app(scope, receive, sender)
+../backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__
+    raise e
+../backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:718: in __call__
+    await route.handle(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:276: in handle
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:66: in app
+    response = await func(request)
+../backend/venv/lib/python3.12/site-packages/fastapi/routing.py:274: in app
+    raw_response = await run_endpoint_function(
+../backend/venv/lib/python3.12/site-packages/fastapi/routing.py:193: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+../backend/venv/lib/python3.12/site-packages/starlette/concurrency.py:41: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+../backend/venv/lib/python3.12/site-packages/anyio/to_thread.py:33: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(
+../backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:877: in run_sync_in_worker_thread
+    return await future
+../backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:807: in run
+    result = context.run(func, *args)
+../backend/app/api/routes/teacher.py:226: in get_analytics
+    ).scalar()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2825: in scalar
+    ret = self.one()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2798: in one
+    return self._iter().one()  # type: ignore
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2847: in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2308: in execute
+    return self._execute_internal(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2190: in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/context.py:293: in orm_execute_statement
+    result = conn.execute(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1416: in execute
+    return meth(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:516: in _execute_on_connection
+    return connection._execute_clauseelement(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1631: in _execute_clauseelement
+    compiled_sql, extracted_params, cache_hit = elem._compile_w_cache(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:684: in _compile_w_cache
+    elem_cache_key = self._generate_cache_key()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:1273: in oneshot
+    result = fn(self, *args, **kw)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:398: in _generate_cache_key
+    return HasCacheKey._generate_cache_key(self)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:367: in _generate_cache_key
+    key = self._gen_cache_key(_anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:321: in _gen_cache_key
+    elem._gen_cache_key(anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:280: in _gen_cache_key
+    obj._gen_cache_key(anon_map, bindparams),
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:280: in _gen_cache_key
+    obj._gen_cache_key(anon_map, bindparams),
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:321: in _gen_cache_key
+    elem._gen_cache_key(anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:267: in _gen_cache_key
+    sck = obj._static_cache_key
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:1601: in __getattr__
+    raise AttributeError(
+E   AttributeError: Neither 'Function' object nor 'Comparator' object has an attribute '_static_cache_key'. Did you mean: '_is_has_cache_key'?</failure></testcase><testcase classname="system.test_teacher_features.TestClassAnalytics" name="test_analytics_most_practiced_words" time="1.618"><failure message="AttributeError: Neither 'Function' object nor 'Comparator' object has an attribute '_static_cache_key'. Did you mean: '_is_has_cache_key'?">../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:1599: in __getattr__
+    return getattr(self.comparator, key)
+E   AttributeError: 'Comparator' object has no attribute '_static_cache_key'
+
+The above exception was the direct cause of the following exception:
+system/test_teacher_features.py:415: in test_analytics_most_practiced_words
+    response = client.get("/api/teacher/analytics", headers=auth_headers_teacher)
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:499: in get
+    return super().get(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:1041: in get
+    return self.request(
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:465: in request
+    return super().request(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:814: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:901: in send
+    response = self._send_handling_auth(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:929: in _send_handling_auth
+    response = self._send_handling_redirects(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:966: in _send_handling_redirects
+    response = self._send_single_request(request)
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:1002: in _send_single_request
+    response = transport.handle_request(request)
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:342: in handle_request
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:339: in handle_request
+    portal.call(self.app, scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/anyio/from_thread.py:277: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/usr/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+/usr/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+../backend/venv/lib/python3.12/site-packages/anyio/from_thread.py:217: in _call_func
+    retval = await retval
+../backend/venv/lib/python3.12/site-packages/fastapi/applications.py:1106: in __call__
+    await super().__call__(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/applications.py:122: in __call__
+    await self.middleware_stack(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py:184: in __call__
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py:162: in __call__
+    await self.app(scope, receive, _send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py:83: in __call__
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:79: in __call__
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:68: in __call__
+    await self.app(scope, receive, sender)
+../backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__
+    raise e
+../backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:718: in __call__
+    await route.handle(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:276: in handle
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:66: in app
+    response = await func(request)
+../backend/venv/lib/python3.12/site-packages/fastapi/routing.py:274: in app
+    raw_response = await run_endpoint_function(
+../backend/venv/lib/python3.12/site-packages/fastapi/routing.py:193: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+../backend/venv/lib/python3.12/site-packages/starlette/concurrency.py:41: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+../backend/venv/lib/python3.12/site-packages/anyio/to_thread.py:33: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(
+../backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:877: in run_sync_in_worker_thread
+    return await future
+../backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:807: in run
+    result = context.run(func, *args)
+../backend/app/api/routes/teacher.py:226: in get_analytics
+    ).scalar()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2825: in scalar
+    ret = self.one()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2798: in one
+    return self._iter().one()  # type: ignore
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2847: in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2308: in execute
+    return self._execute_internal(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2190: in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/context.py:293: in orm_execute_statement
+    result = conn.execute(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1416: in execute
+    return meth(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:516: in _execute_on_connection
+    return connection._execute_clauseelement(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1631: in _execute_clauseelement
+    compiled_sql, extracted_params, cache_hit = elem._compile_w_cache(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:684: in _compile_w_cache
+    elem_cache_key = self._generate_cache_key()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:1273: in oneshot
+    result = fn(self, *args, **kw)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:398: in _generate_cache_key
+    return HasCacheKey._generate_cache_key(self)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:367: in _generate_cache_key
+    key = self._gen_cache_key(_anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:321: in _gen_cache_key
+    elem._gen_cache_key(anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:280: in _gen_cache_key
+    obj._gen_cache_key(anon_map, bindparams),
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:280: in _gen_cache_key
+    obj._gen_cache_key(anon_map, bindparams),
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:321: in _gen_cache_key
+    elem._gen_cache_key(anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:267: in _gen_cache_key
+    sck = obj._static_cache_key
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:1601: in __getattr__
+    raise AttributeError(
+E   AttributeError: Neither 'Function' object nor 'Comparator' object has an attribute '_static_cache_key'. Did you mean: '_is_has_cache_key'?</failure></testcase><testcase classname="system.test_teacher_features.TestClassAnalytics" name="test_analytics_challenging_words" time="0.784"><failure message="AttributeError: Neither 'Function' object nor 'Comparator' object has an attribute '_static_cache_key'. Did you mean: '_is_has_cache_key'?">../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:1599: in __getattr__
+    return getattr(self.comparator, key)
+E   AttributeError: 'Comparator' object has no attribute '_static_cache_key'
+
+The above exception was the direct cause of the following exception:
+system/test_teacher_features.py:429: in test_analytics_challenging_words
+    response = client.get("/api/teacher/analytics", headers=auth_headers_teacher)
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:499: in get
+    return super().get(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:1041: in get
+    return self.request(
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:465: in request
+    return super().request(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:814: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:901: in send
+    response = self._send_handling_auth(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:929: in _send_handling_auth
+    response = self._send_handling_redirects(
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:966: in _send_handling_redirects
+    response = self._send_single_request(request)
+../backend/venv/lib/python3.12/site-packages/httpx/_client.py:1002: in _send_single_request
+    response = transport.handle_request(request)
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:342: in handle_request
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/testclient.py:339: in handle_request
+    portal.call(self.app, scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/anyio/from_thread.py:277: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/usr/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+/usr/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+../backend/venv/lib/python3.12/site-packages/anyio/from_thread.py:217: in _call_func
+    retval = await retval
+../backend/venv/lib/python3.12/site-packages/fastapi/applications.py:1106: in __call__
+    await super().__call__(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/applications.py:122: in __call__
+    await self.middleware_stack(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py:184: in __call__
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py:162: in __call__
+    await self.app(scope, receive, _send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py:83: in __call__
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:79: in __call__
+    raise exc
+../backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:68: in __call__
+    await self.app(scope, receive, sender)
+../backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__
+    raise e
+../backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:718: in __call__
+    await route.handle(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:276: in handle
+    await self.app(scope, receive, send)
+../backend/venv/lib/python3.12/site-packages/starlette/routing.py:66: in app
+    response = await func(request)
+../backend/venv/lib/python3.12/site-packages/fastapi/routing.py:274: in app
+    raw_response = await run_endpoint_function(
+../backend/venv/lib/python3.12/site-packages/fastapi/routing.py:193: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+../backend/venv/lib/python3.12/site-packages/starlette/concurrency.py:41: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+../backend/venv/lib/python3.12/site-packages/anyio/to_thread.py:33: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(
+../backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:877: in run_sync_in_worker_thread
+    return await future
+../backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:807: in run
+    result = context.run(func, *args)
+../backend/app/api/routes/teacher.py:226: in get_analytics
+    ).scalar()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2825: in scalar
+    ret = self.one()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2798: in one
+    return self._iter().one()  # type: ignore
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py:2847: in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2308: in execute
+    return self._execute_internal(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2190: in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/orm/context.py:293: in orm_execute_statement
+    result = conn.execute(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1416: in execute
+    return meth(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:516: in _execute_on_connection
+    return connection._execute_clauseelement(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1631: in _execute_clauseelement
+    compiled_sql, extracted_params, cache_hit = elem._compile_w_cache(
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:684: in _compile_w_cache
+    elem_cache_key = self._generate_cache_key()
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:1273: in oneshot
+    result = fn(self, *args, **kw)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:398: in _generate_cache_key
+    return HasCacheKey._generate_cache_key(self)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:367: in _generate_cache_key
+    key = self._gen_cache_key(_anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:321: in _gen_cache_key
+    elem._gen_cache_key(anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:280: in _gen_cache_key
+    obj._gen_cache_key(anon_map, bindparams),
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:280: in _gen_cache_key
+    obj._gen_cache_key(anon_map, bindparams),
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:321: in _gen_cache_key
+    elem._gen_cache_key(anon_map, bindparams)
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/cache_key.py:267: in _gen_cache_key
+    sck = obj._static_cache_key
+../backend/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:1601: in __getattr__
+    raise AttributeError(
+E   AttributeError: Neither 'Function' object nor 'Comparator' object has an attribute '_static_cache_key'. Did you mean: '_is_has_cache_key'?</failure></testcase><testcase classname="system.test_teacher_features.TestDailyChallengeWord" name="test_daily_challenge_returns_word" time="0.121" /><testcase classname="system.test_teacher_features.TestDailyChallengeWord" name="test_daily_challenge_with_database_words" time="0.085" /><testcase classname="system.test_teacher_features.TestDailyChallengeWord" name="test_daily_challenge_structure" time="0.084"><failure message="assert 500 == 200&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">system/test_teacher_features.py:474: in test_daily_challenge_structure
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code</failure></testcase></testsuite></testsuites>
