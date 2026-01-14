@@ -8,6 +8,24 @@ from typing import Dict, List, Optional
 class FeedbackService:
     """Generate automated feedback from pronunciation scores"""
 
+    # Performance level thresholds
+    EXCELLENT_THRESHOLD = 90
+    GREAT_THRESHOLD = 80
+    GOOD_THRESHOLD = 70
+    OKAY_THRESHOLD = 60
+
+    # Component score thresholds
+    ACCURACY_LOW_THRESHOLD = 70
+    ACCURACY_HIGH_THRESHOLD = 85
+    FLUENCY_LOW_THRESHOLD = 70
+    FLUENCY_HIGH_THRESHOLD = 85
+    COMPLETENESS_LOW_THRESHOLD = 80
+    COMPLETENESS_HIGH_THRESHOLD = 90
+
+    # Phoneme analysis thresholds
+    PHONEME_PROBLEM_THRESHOLD = 60
+    MAX_PHONEME_FEEDBACK_COUNT = 3
+
     @staticmethod
     def generate_feedback(assessment_result: Dict, word_text: str) -> Dict:
         """
@@ -39,13 +57,13 @@ class FeedbackService:
         feedback_parts = []
 
         # Overall performance
-        if pronunciation_score >= 90:
+        if pronunciation_score >= FeedbackService.EXCELLENT_THRESHOLD:
             feedback_parts.append(f"Excellent pronunciation of '{word_text}'! 🌟")
-        elif pronunciation_score >= 80:
+        elif pronunciation_score >= FeedbackService.GREAT_THRESHOLD:
             feedback_parts.append(f"Great job on '{word_text}'! You're doing very well.")
-        elif pronunciation_score >= 70:
+        elif pronunciation_score >= FeedbackService.GOOD_THRESHOLD:
             feedback_parts.append(f"Good effort on '{word_text}'. You're making progress!")
-        elif pronunciation_score >= 60:
+        elif pronunciation_score >= FeedbackService.OKAY_THRESHOLD:
             feedback_parts.append(f"Nice try with '{word_text}'. Keep practicing!")
         else:
             feedback_parts.append(f"Keep working on '{word_text}'. Practice makes perfect!")
@@ -54,19 +72,19 @@ class FeedbackService:
         areas_to_improve = []
         strengths = []
 
-        if accuracy_score < 70:
+        if accuracy_score < FeedbackService.ACCURACY_LOW_THRESHOLD:
             areas_to_improve.append("pronunciation accuracy")
-        elif accuracy_score >= 85:
+        elif accuracy_score >= FeedbackService.ACCURACY_HIGH_THRESHOLD:
             strengths.append("accurate pronunciation")
 
-        if fluency_score < 70:
+        if fluency_score < FeedbackService.FLUENCY_LOW_THRESHOLD:
             areas_to_improve.append("fluency and rhythm")
-        elif fluency_score >= 85:
+        elif fluency_score >= FeedbackService.FLUENCY_HIGH_THRESHOLD:
             strengths.append("smooth fluency")
 
-        if completeness_score < 80:
+        if completeness_score < FeedbackService.COMPLETENESS_LOW_THRESHOLD:
             areas_to_improve.append("completing the full word clearly")
-        elif completeness_score >= 90:
+        elif completeness_score >= FeedbackService.COMPLETENESS_HIGH_THRESHOLD:
             strengths.append("clear articulation")
 
         # Add strengths
@@ -83,9 +101,9 @@ class FeedbackService:
             feedback_parts.append(phoneme_feedback)
 
         # Encouragement and next steps
-        if pronunciation_score < 70:
+        if pronunciation_score < FeedbackService.GOOD_THRESHOLD:
             feedback_parts.append("💡 Tip: Listen to the model pronunciation and try to match the sounds carefully.")
-        elif pronunciation_score < 85:
+        elif pronunciation_score < FeedbackService.ACCURACY_HIGH_THRESHOLD:
             feedback_parts.append("💡 Tip: You're close! Pay attention to the stress and rhythm of the word.")
         else:
             feedback_parts.append("Keep up the excellent work!")
@@ -139,14 +157,14 @@ class FeedbackService:
 
             for phoneme in word['phonemes']:
                 phoneme_score = phoneme.get('accuracy_score', 100)
-                if phoneme_score < 60:
+                if phoneme_score < FeedbackService.PHONEME_PROBLEM_THRESHOLD:
                     phoneme_text = phoneme.get('phoneme', '').strip()
                     if phoneme_text and phoneme_text not in problem_phonemes:
                         problem_phonemes.append(phoneme_text)
 
         if problem_phonemes:
-            # Limit to first 3 problem phonemes to keep feedback concise
-            problem_phonemes = problem_phonemes[:3]
+            # Limit to keep feedback concise
+            problem_phonemes = problem_phonemes[:FeedbackService.MAX_PHONEME_FEEDBACK_COUNT]
             phoneme_list = ', '.join([f"/{p}/" for p in problem_phonemes])
             return f"Pay special attention to these sounds: {phoneme_list}."
 
