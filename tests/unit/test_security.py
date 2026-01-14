@@ -6,6 +6,7 @@ import pytest
 import sys
 from pathlib import Path
 from jose import jwt
+from jose.exceptions import JWTError
 from datetime import datetime, timedelta
 
 # Add backend to path
@@ -280,7 +281,7 @@ class TestCreateAccessToken:
         assert decoded["sub"] == user_id
 
         # Should fail with wrong key
-        with pytest.raises(jwt.InvalidSignatureError):
+        with pytest.raises(JWTError):
             jwt.decode(token, "wrong-secret-key", algorithms=[settings.ALGORITHM])
 
     def test_token_algorithm_verification(self):
@@ -298,7 +299,7 @@ class TestCreateAccessToken:
             # If it doesn't raise, the algorithm in header should still be HS256
             header = jwt.get_unverified_header(token)
             assert header["alg"] == settings.ALGORITHM
-        except jwt.InvalidAlgorithmError:
+        except JWTError:
             # Expected if algorithm validation is strict
             pass
 

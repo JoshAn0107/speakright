@@ -7,12 +7,16 @@ import sys
 from pathlib import Path
 import tempfile
 import os
+import shutil
 
 # Add backend to path
 backend_path = Path(__file__).parent.parent.parent / "backend"
 sys.path.insert(0, str(backend_path))
 
 from app.services.pronunciation_service import PronunciationService
+
+# Check if ffmpeg is available for audio conversion tests
+FFMPEG_AVAILABLE = shutil.which("ffmpeg") is not None
 
 
 class TestGetMockAssessment:
@@ -187,6 +191,7 @@ class TestGetMockAssessment:
                 assert isinstance(phoneme["accuracy_score"], (int, float))
 
 
+@pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg required for audio conversion tests")
 class TestConvertToAzureFormat:
     """
     L01 Requirement 3.g: The _convert_to_azure_format function should

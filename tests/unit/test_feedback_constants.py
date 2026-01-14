@@ -51,20 +51,18 @@ class TestFeedbackConstants:
 
     def test_threshold_consistency_with_grade_boundaries(self):
         """
-        INTENTIONAL FAILURE: Test that performance thresholds match grade calculation
-        This test will initially fail to demonstrate CI failure detection
+        Test that performance thresholds align with grade calculation boundaries
         """
-        # Check that EXCELLENT_THRESHOLD matches A+ boundary in _calculate_grade
-        assert FeedbackService._calculate_grade(FeedbackService.EXCELLENT_THRESHOLD) == "A+"
+        # EXCELLENT_THRESHOLD (90) is the "A" boundary, not "A+" (which is 95)
+        assert FeedbackService._calculate_grade(FeedbackService.EXCELLENT_THRESHOLD) == "A"
 
-        # Check that GREAT_THRESHOLD matches A boundary
-        assert FeedbackService._calculate_grade(FeedbackService.GREAT_THRESHOLD) == "A"
+        # GREAT_THRESHOLD (80) is the "B+" boundary
+        assert FeedbackService._calculate_grade(FeedbackService.GREAT_THRESHOLD) == "B+"
 
-        # Check that GOOD_THRESHOLD matches B- boundary
+        # GOOD_THRESHOLD (70) is the "B-" boundary
         assert FeedbackService._calculate_grade(FeedbackService.GOOD_THRESHOLD) == "B-"
 
-        # Check that OKAY_THRESHOLD matches C boundary
-        # OKAY_THRESHOLD (60) correctly gives "C" grade
+        # OKAY_THRESHOLD (60) is the "C" boundary
         assert FeedbackService._calculate_grade(FeedbackService.OKAY_THRESHOLD) == "C"
 
     def test_max_phoneme_count_is_reasonable(self):
