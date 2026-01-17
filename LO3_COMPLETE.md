@@ -18,7 +18,19 @@
 
 ## 3.1 Testing Techniques Applied
 
-The following testing techniques were applied, consistent with the requirements analysis (LO1) and test plan (LO2):
+The following testing techniques were applied, consistent with the requirements analysis (LO1), test plan (LO2), and testing strategy (LO4).
+
+### Why These Techniques Were Selected
+
+| Technique | Selection Rationale |
+|-----------|---------------------|
+| **Equivalence Partitioning** | Grade calculation has natural partitions (A+ to F); ensures all categories tested |
+| **Boundary Value Analysis** | Score thresholds are error-prone boundaries; critical for correctness |
+| **Decision Table Testing** | Feedback generation has multiple conditions; ensures all combinations covered |
+| **Classification Tree** | Authentication has independent input dimensions; systematic coverage |
+| **Pairwise Testing** | Filter parameters are independent; reduces combinatorial explosion |
+| **Statement Coverage** | Industry standard metric; validates code execution |
+| **Error Guessing** | Security vulnerabilities require experience-based probing |
 
 ### 3.1.1 Specification-Based Techniques (Black-Box)
 
@@ -240,6 +252,16 @@ Testing detected the following issues during development:
 **Fault Detection Rate:** 5 bugs found and fixed during TDD process.
 
 ### 3.4.5 Limitations and Remaining Risks
+
+**Why Testing Stopped Here:**
+
+Testing effort was bounded by the principle of diminishing returns. The 73% coverage threshold was chosen because:
+1. Core business logic (grade calculation, feedback, authentication) achieved 100% coverage
+2. Additional coverage would require testing error handlers and edge cases with low likelihood of occurrence
+3. The risk-based prioritisation (LO4) deliberately deprioritised complex CRUD operations and frontend UI
+4. Time invested beyond this point would not proportionally reduce defect risk
+
+**Accepted Risk:** The 20% coverage on `assignments.py` represents a conscious trade-off—core assignment flows are tested, but edge cases in complex filtering logic remain untested. This risk is accepted because assignment failures are recoverable (data can be re-entered) and the feature is used less frequently than student recording submission.
 
 **Acknowledged Limitations:**
 
