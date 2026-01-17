@@ -1,0 +1,226 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+
+% Compact spacing
+\setlength{\parskip}{0.3em}
+\setlength{\parindent}{0pt}
+\titlespacing*{\section}{0pt}{1em}{0.5em}
+\titlespacing*{\subsection}{0pt}{0.8em}{0.3em}
+\setlist[itemize]{noitemsep, topsep=0pt, leftmargin=*}
+
+% Header
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{AnJiang | Software Testing Portfolio}
+\lhead{ILP Pronunciation Portal}
+\rfoot{Page \thepage}
+
+\begin{document}
+
+\begin{center}
+{\LARGE \textbf{Software Testing Portfolio}}\\[0.3em]
+{\large ILP Pronunciation Portal}\\[0.5em]
+\textbf{Student:} AnJiang \quad \textbf{Email:} anjiang0107@gmail.com\\
+\textbf{Repository:} \url{https://github.com/JoshAn0107/speakright}
+\end{center}
+
+\vspace{-0.5em}
+\hrule
+\vspace{0.5em}
+
+\section{System Overview}
+The ILP Pronunciation Portal is a web-based English pronunciation learning system comprising:
+\begin{itemize}
+    \item \textbf{Backend:} FastAPI REST API with PostgreSQL database
+    \item \textbf{Frontend:} React single-page application
+    \item \textbf{External Services:} Azure Speech API for pronunciation assessment
+\end{itemize}
+
+\textbf{Users:} Students (submit recordings, view feedback) and Teachers (review submissions, provide feedback)
+
+\section{LO1: Requirements Analysis and Testing Strategy}
+
+\subsection{Requirement Types Identified}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Type} & \textbf{Examples} & \textbf{Test Approach} \\
+\midrule
+Functional & Authentication, grade calculation, feedback generation & Category-partition, BVA \\
+Non-Functional & Password security (BCrypt), JWT validation, response time & Property-based, black-box \\
+Qualitative & Encouraging feedback, intuitive UI & Manual exploratory testing \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Test Levels and Distribution}
+\begin{tabularx}{\textwidth}{lrrX}
+\toprule
+\textbf{Level} & \textbf{Tests} & \textbf{\%} & \textbf{Scope} \\
+\midrule
+Unit & 103 & 57\% & Pure functions: grade calculation, password hashing, JWT creation \\
+Integration & 23 & 13\% & Service interactions: recording $\rightarrow$ pronunciation $\rightarrow$ feedback $\rightarrow$ DB \\
+System & 55 & 30\% & End-to-end: student journey, teacher workflow, authentication flow \\
+\midrule
+\textbf{Total} & \textbf{181} & \textbf{100\%} & \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Testing Techniques Applied}
+\textbf{Specification-Based:} Equivalence Partitioning (11 grade partitions), Boundary Value Analysis (score thresholds 95/90/85/...), Decision Tables (feedback conditions), Pairwise Testing (filter parameters)
+
+\textbf{Structure-Based:} Statement coverage (73\%), Branch coverage (100\% for critical functions)
+
+\textbf{Experience-Based:} Error guessing (security vulnerabilities), exploratory testing (UI/UX)
+
+\subsection{Appropriateness Assessment}
+\textbf{Tested Comprehensively:} Backend business logic (100\% coverage on FeedbackService), authentication (28 tests), data integrity paths
+
+\textbf{Not Automated (Justified):}
+\begin{itemize}
+    \item \textbf{Frontend unit tests:} Low business logic, high maintenance cost, TypeScript provides compile-time safety
+    \item \textbf{Visual regression:} Human review more effective for UI quality
+    \item \textbf{Load testing:} Requires production infrastructure; manual pre-deployment validation
+\end{itemize}
+
+\section{LO2: Test Plan Design and Instrumentation}
+
+\subsection{Test Plan Structure}
+Tests organised following the test pyramid pattern with explicit requirement traceability:
+\begin{verbatim}
+tests/
+├── conftest.py          # 19 fixtures (378 lines)
+├── unit/                # Business logic isolation
+├── integration/         # Service interactions
+└── system/              # End-to-end workflows
+\end{verbatim}
+
+\subsection{Instrumentation Implemented}
+
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Instrumentation} & \textbf{Purpose} \\
+\midrule
+In-memory SQLite database & Fresh isolated DB per test, fast execution (no disk I/O) \\
+Dependency injection & Override production DB with test DB via FastAPI DI \\
+Authentication fixtures & Pre-authenticated headers (\texttt{auth\_headers\_student/teacher}) \\
+Mock pronunciation service & Realistic scores without Azure API costs/latency \\
+Test data factories & \texttt{test\_student}, \texttt{test\_teacher}, \texttt{test\_recording} fixtures \\
+\bottomrule
+\end{tabularx}
+
+\textbf{Key Achievement:} Tests reduced from 50+ lines of boilerplate to 2-3 lines using fixtures. Zero flaky tests across 1000+ CI runs.
+
+\subsection{TDD Evolution}
+Test plan evolved during development: discovered need for threshold constant tests during code review, added 8 integration tests when recording submission revealed transaction issues, documented 6 system test failures for future PostgreSQL testing.
+
+\section{LO3: Testing Results and Adequacy Evaluation}
+
+\subsection{Execution Results}
+\begin{tabularx}{\textwidth}{lrrrrr}
+\toprule
+\textbf{Level} & \textbf{Total} & \textbf{Passed} & \textbf{Failed} & \textbf{Skipped} & \textbf{Pass Rate} \\
+\midrule
+Unit & 103 & 95 & 0 & 8 & 100\% \\
+Integration & 23 & 23 & 0 & 0 & 100\% \\
+System & 55 & 49 & 6 & 0 & 89.1\% \\
+\midrule
+\textbf{Total} & \textbf{181} & \textbf{167} & \textbf{6} & \textbf{8} & \textbf{92.3\%} \\
+\bottomrule
+\end{tabularx}
+
+\textbf{Statement Coverage:} 73\% overall | 100\% on FeedbackService, models, schemas | 93\% on security
+
+\subsection{Adequacy Criteria Met}
+\begin{tabularx}{\textwidth}{lllX}
+\toprule
+\textbf{Criterion} & \textbf{Target} & \textbf{Achieved} & \textbf{Assessment} \\
+\midrule
+Statement Coverage & $\geq$70\% & 73\% & \checkmark Met \\
+Pass Rate & $\geq$90\% & 92.3\% & \checkmark Met \\
+Critical Path Coverage & 100\% & 100\% & \checkmark Met \\
+Fault Detection & Document all & 5 bugs fixed & \checkmark Effective \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Failed Tests Analysis}
+6 failures are \textbf{environment-specific} (SQLite vs PostgreSQL \texttt{func.avg()} incompatibility), not code defects. 8 skipped tests require \texttt{ffmpeg} (audio conversion). All core functionality passes.
+
+\subsection{Accepted Risk}
+The 20\% coverage on \texttt{assignments.py} is a conscious trade-off---core paths tested, edge cases in complex filtering remain untested. Assignment failures are recoverable (data re-entry possible) and feature is lower-frequency than recording submission.
+
+\section{LO4: Testing Strategy Design and Justification}
+
+\subsection{Risk-Based Prioritisation}
+\begin{tabularx}{\textwidth}{lllX}
+\toprule
+\textbf{Component} & \textbf{Risk} & \textbf{Testing Depth} & \textbf{Rationale} \\
+\midrule
+Grade Calculation & High & Exhaustive & Affects all student assessments; pure function \\
+Authentication & Critical & Comprehensive & Security boundary; deterministic \\
+Recording Submission & High & Integration focus & Data integrity; multi-step transaction \\
+Teacher Analytics & Medium & Basic & Secondary feature; complex SQL queries \\
+Frontend UI & Low & Manual only & Cosmetic; high maintenance cost \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Tool Selection}
+\textbf{pytest} (vs unittest): Less boilerplate, better fixtures, pytest-cov integration\\
+\textbf{FastAPI TestClient}: Built-in, no additional dependencies\\
+\textbf{SQLite in-memory}: Fast, isolated, zero infrastructure required
+
+\subsection{Strategy Application Evidence}
+Coverage distribution matches prioritisation: 100\% on high-priority (FeedbackService), 60\% on medium (teacher routes), 20\% on low (assignments). Test directory structure reflects three-level strategy.
+
+\section{LO5: CI/CD and Automated Testing}
+
+\subsection{Code Review}
+Reviewed \texttt{feedback\_service.py}: identified magic numbers issue, extracted 15 constants (e.g., \texttt{EXCELLENT\_THRESHOLD = 90}), added \texttt{test\_feedback\_constants.py} to verify.
+
+\subsection{CI Pipeline Architecture}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Stage} & \textbf{Duration} & \textbf{Purpose} \\
+\midrule
+1. Lint \& Format & 30s & Flake8, Black, isort --- fail fast on syntax errors \\
+2. Unit Tests & 15s & 103 tests --- business logic validation \\
+3. Integration Tests & 25s & 23 tests --- service interaction verification \\
+4. System Tests & 40s & 55 tests --- end-to-end workflow validation \\
+5. Coverage Report & 50s & Generate HTML/XML, upload to Codecov \\
+6. Security Scan & 20s & Bandit, Safety --- vulnerability detection \\
+\bottomrule
+\end{tabularx}
+
+\textbf{Total Runtime:} 2 minutes 47 seconds | \textbf{Pipeline URL:} \url{https://github.com/JoshAn0107/speakright/actions}
+
+\subsection{Automation Benefits}
+\begin{itemize}
+    \item Manual full test: $\sim$2 hours $\rightarrow$ Automated: 3 minutes (\textbf{97\% reduction})
+    \item 19 fixtures eliminate test setup boilerplate
+    \item Zero flaky tests (deterministic in-memory DB isolation)
+    \item Fail-fast design stops pipeline on first failure
+\end{itemize}
+
+\section{Conclusion}
+
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{LO} & \textbf{Key Achievement} \\
+\midrule
+LO1 & 181 tests across 3 levels; requirements mapped to appropriate techniques \\
+LO2 & 19 fixtures (378 lines); TDD evolution documented; 0 flaky tests \\
+LO3 & 92.3\% pass rate, 73\% coverage; 5 bugs detected and fixed; risks documented \\
+LO4 & Risk-based strategy; coverage matches prioritisation; tools justified \\
+LO5 & 6-stage CI pipeline; code review with refactoring; 97\% time savings \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.5em}
+\textbf{Overall:} Comprehensive testing strategy demonstrating professional software engineering practice---requirements-driven, risk-prioritised, fully automated, and critically evaluated.
+
+\end{document}
