@@ -112,30 +112,10 @@ They don't describe specific features but rather constrain how features must per
 
 | ID | Requirement | Validation Method |
 |----|-------------|-------------------|
-| Q5 | Screen reader compatible | Manual testing with NVDA/JAWS |
-| Q6 | Keyboard navigation support | Tab-through testing |
-| Q7 | Color contrast meets WCAG AA | Automated contrast checker |
+| Q5 | Color contrast meets WCAG AA | Automated contrast checker |
 
 **Why These Are Qualitative:**
 They cannot be reduced to pass/fail criteria. "Encouraging" and "intuitive" are subjective judgments requiring human evaluation. However, they are documented because they influence design decisions and manual testing priorities.
-
----
-
-### 1.1.4 Why This Range Matters
-
-**✅ Demonstrates Comprehensive Analysis:**
-Identifying all three requirement types shows understanding that software quality isn't just correctness (functional) but also performance, security (non-functional), and user satisfaction (qualitative).
-
-**✅ Guides Test Strategy:**
-- Functional → Automated unit/integration/system tests
-- Non-functional (measurable) → Automated with assertions on metrics
-- Non-functional (security) → Specific attack simulation tests
-- Qualitative → Manual testing with documented criteria
-
-**✅ Risk-Based Prioritization:**
-- High-risk functional requirements (authentication, grading) → Comprehensive test coverage
-- Critical non-functional (security) → Dedicated test suite
-- Qualitative (UX) → Documented but less automated testing
 
 ---
 
@@ -336,9 +316,9 @@ Different requirements need different testing techniques. This section maps requ
    Testing one case from each partition ensures all authentication scenarios are covered without redundant tests.
 
 **Why NOT Other Approaches:**
-- ❌ Pairwise: Email and password are not independent parameters; they must be evaluated together
-- ❌ Random: Doesn't guarantee coverage of critical failure modes
-- ❌ Property-based: Authentication has discrete states, not continuous properties
+-  Pairwise: Email and password are not independent parameters; they must be evaluated together
+-  Random: Doesn't guarantee coverage of critical failure modes
+-  Property-based: Authentication has discrete states, not continuous properties
 
 ---
 
@@ -514,7 +494,7 @@ This section critically evaluates the testing strategy, acknowledging limitation
 
 ### 1.4.1 What Is Tested Comprehensively
 
-**✅ Backend Business Logic (Unit Level)**
+**Backend Business Logic (Unit Level)**
 
 **Coverage:** 103 unit tests
 
@@ -534,7 +514,7 @@ Unit tests provide the highest return on investment - they're fast, reliable, an
 
 ---
 
-**✅ Backend Service Integration (Integration Level)**
+**Backend Service Integration (Integration Level)**
 
 **Coverage:** 23 integration tests
 
@@ -556,7 +536,7 @@ Integration tests are slower and harder to debug than unit tests, so we focus on
 
 ---
 
-**✅ Backend End-to-End Workflows (System Level)**
+**Backend End-to-End Workflows (System Level)**
 
 **Coverage:** 55 system tests
 
@@ -577,7 +557,7 @@ System tests are the slowest but provide the highest confidence that the system 
 
 ### 1.4.2 What Is NOT Tested (And Why)
 
-**❌ Frontend Unit Tests (Individual React Components)**
+**Frontend Unit Tests (Individual React Components)**
 
 **Decision:** No automated tests for individual React components.
 
@@ -611,7 +591,7 @@ Frontend bugs are typically:
 
 ---
 
-**❌ Visual Regression Testing (Screenshot Comparison)**
+**Visual Regression Testing (Screenshot Comparison)**
 
 **Decision:** No automated screenshot-based testing.
 
@@ -639,7 +619,7 @@ Frontend bugs are typically:
 
 ---
 
-**❌ Performance/Load Testing (Automated)**
+**Performance/Load Testing (Automated)**
 
 **Decision:** No automated load tests in CI pipeline.
 
@@ -667,7 +647,7 @@ Frontend bugs are typically:
 
 ---
 
-**❌ Full Combinatorial Testing**
+**Full Combinatorial Testing**
 
 **Decision:** Using pairwise instead of full combinatorial for multi-parameter tests.
 
@@ -688,70 +668,7 @@ Pairwise would remain ~9 tests
 
 ---
 
-### 1.4.3 Strategic Trade-offs
-
-**Decision Matrix:**
-
-| Aspect | Backend Unit/Integration/System | Frontend Unit | Frontend E2E | Load Testing |
-|--------|--------------------------------|---------------|--------------|--------------|
-| **Bug Impact** | ⭐⭐⭐⭐⭐ Critical | ⭐⭐ Low | ⭐⭐⭐ Medium | ⭐⭐⭐⭐ High |
-| **Test Stability** | ⭐⭐⭐⭐⭐ Stable | ⭐⭐ Flaky | ⭐⭐ Very Flaky | ⭐⭐⭐ Moderate |
-| **Execution Speed** | ⭐⭐⭐⭐⭐ Fast (20s) | ⭐⭐⭐ Medium | ⭐ Slow (min) | ⭐ Very Slow |
-| **Maintenance Cost** | ⭐⭐⭐⭐ Low | ⭐⭐⭐ Medium | ⭐ High | ⭐⭐ Medium |
-| **ROI** | ⭐⭐⭐⭐⭐ Excellent | ⭐⭐ Poor | ⭐⭐ Fair | ⭐⭐⭐ Good (later) |
-| **Decision** | ✅ Comprehensive | ❌ Not Automated | ✅ Smoke Only | ⏳ Manual Pre-Deploy |
-
----
-
-### 1.4.4 Why This Approach Is Academically Sound
-
-**✅ Risk-Based Testing Principle**
-
-Industry best practice: Allocate testing resources proportional to risk.
-
-- **High Risk (backend business logic):** 181 automated tests
-- **Medium Risk (frontend integration):** System tests + manual
-- **Low Risk (visual aesthetics):** Manual review only
-
-**Academic Reference:** *ISTQB Foundation Level Syllabus* - Section 1.3 Risk-Based Testing
-
----
-
-**✅ Test Pyramid Pattern**
-
-Recognized testing pattern: Many fast unit tests, fewer integration tests, even fewer system tests.
-
-**Our Distribution:**
-- Unit: 103 tests (base of pyramid)
-- Integration: 23 tests (middle)
-- System: 55 tests (top - wider than typical, but justified by comprehensive backend coverage)
-
-**Why Our Pyramid Is Valid:**
-- Backend-heavy system (most logic is server-side)
-- System tests are fast (20s total, no real browser)
-- Provides confidence in user workflows
-
-**Academic Reference:** *Test Pyramid* by Mike Cohn, "Succeeding with Agile"
-
----
-
-**✅ Equivalence Partitioning**
-
-Academic testing principle: If one value in a partition passes, all values pass.
-
-**Application:**
-- Grade calculation: Test boundaries (95, 90, 85...) instead of every value 0-100
-- Authentication: Test one valid credential case, not 100 different valid users
-
-**Why This Is Sufficient:**
-- Boundary Value Analysis proves partition coverage
-- Testing interior values adds no new information
-
-**Academic Reference:** *Software Testing Techniques* by Boris Beizer
-
----
-
-### 1.4.5 Limitations and Future Work
+### 1.4.3 Limitations and Future Work
 
 **Current Limitations:**
 
@@ -774,22 +691,6 @@ Academic testing principle: If one value in a partition passes, all values pass.
    - **What:** Automated load tests in CI
    - **Why Not:** Requires production-like infrastructure
    - **Future:** Add load tests in staging environment before production deploy
-
----
-
-### 1.4.6 Professional Defense
-
-**If Asked: "Why so few frontend tests?"**
-
-> "I made a conscious, risk-based decision to focus testing effort where failures have the highest impact and automated tests provide the highest return on investment. Backend business logic affects all users and is highly testable with stable, fast tests. Frontend testing is addressed at the system level where integration with backend APIs is verified, and through manual exploratory testing where visual and UX issues are more effectively caught by humans. This allocation reflects professional testing practice documented in the Test Pyramid pattern and risk-based testing principles."
-
-**If Asked: "Isn't 100% code coverage the goal?"**
-
-> "No. 100% coverage is neither achievable nor optimal. Our 91% backend coverage targets business logic, leaving uncovered code in error handling for edge cases that are impossible or impractical to trigger (e.g., database connection failures on localhost). The goal is not arbitrary coverage percentage but confidence that critical functionality is correct. Our 181 tests provide high confidence in system correctness while executing in 20 seconds, enabling rapid feedback during development."
-
-**If Asked: "What about load testing?"**
-
-> "Load testing is documented and performed manually before deployment, not in the CI pipeline. Automated load tests require production-like infrastructure and take significant time, making them unsuitable for per-commit validation. Instead, system tests include timing assertions to catch performance regressions early, and production has monitoring and alerting. This follows the principle of running expensive tests less frequently where they're most valuable - before release, not on every commit."
 
 ---
 
@@ -850,13 +751,13 @@ Total: 181 automated tests
 
 ### LO1 Achievement Summary
 
-**✅ 1.1 Range of Requirements:** Identified functional, non-functional (measurable), and qualitative requirements across backend and frontend.
+**1.1 Range of Requirements:** Identified functional, non-functional (measurable), and qualitative requirements across backend and frontend.
 
-**✅ 1.2 Level of Requirements:** Defined unit, integration, and system level requirements with 181 implemented tests distributed across all levels.
+**1.2 Level of Requirements:** Defined unit, integration, and system level requirements with 181 implemented tests distributed across all levels.
 
-**✅ 1.3 Identifying Test Approaches:** Mapped requirements to appropriate testing techniques (category-partition, pairwise, black-box, property-based, system) with clear justifications.
+**1.3 Identifying Test Approaches:** Mapped requirements to appropriate testing techniques (category-partition, pairwise, black-box, property-based, system) with clear justifications.
 
-**✅ 1.4 Assess Appropriateness:** Critically evaluated testing strategy, explicitly documented what is NOT tested and why, justified trade-offs with risk-based reasoning and industry patterns.
+**1.4 Assess Appropriateness:** Critically evaluated testing strategy, explicitly documented what is NOT tested and why, justified trade-offs with risk-based reasoning and industry patterns.
 
 ### Key Strengths
 
@@ -874,35 +775,9 @@ Total: 181 automated tests
 - **Execution Time:** ~20 seconds
 - **CI Integration:** Automated on every push
 
-### Strategic Decisions Justified
-
-- ✅ Comprehensive backend testing (high risk, high testability)
-- ✅ Selective frontend testing (low logic, high maintenance cost)
-- ✅ Manual performance testing (infrastructure requirements)
-- ✅ Pairwise over combinatorial (diminishing returns)
-
 **This testing strategy provides high confidence in system correctness while using resources efficiently - exactly what professional software engineering requires.**
 
 ---
-
-## Appendix: Quick Reference
-
-### For Portfolio Defense
-
-**Q: What types of requirements did you identify?**
-A: Functional (features), non-functional (performance/security), and qualitative (UX/accessibility).
-
-**Q: What levels did you test?**
-A: Unit (103 tests), integration (23 tests), and system (55 tests).
-
-**Q: Why category-partition testing?**
-A: Requirements like authentication have natural input partitions; testing one case per partition ensures coverage.
-
-**Q: What didn't you test?**
-A: Frontend unit tests (low logic, high maintenance), visual regression (human review better), automated load tests (need production infrastructure).
-
-**Q: How do you justify these decisions?**
-A: Risk-based allocation following Test Pyramid pattern; focus effort where impact and ROI are highest.
 
 ### File Locations
 

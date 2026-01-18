@@ -90,36 +90,43 @@ def create_assignment(
             detail="One or more invalid student IDs"
         )
 
-    # Create assignment
-    assignment = Assignment(
-        teacher_id=current_user.id,
-        title=assignment_data.title,
-        description=assignment_data.description,
-        word_database_id=assignment_data.word_database_id,
-        due_date=assignment_data.due_date
-    )
-    db.add(assignment)
-    db.flush()  # Get assignment ID
-
-    # Add words to assignment
-    for index, word_text in enumerate(assignment_data.words):
-        assignment_word = AssignmentWord(
-            assignment_id=assignment.id,
-            word_text=word_text.lower().strip(),
-            order_index=index
+    try:
+        # Create assignment
+        assignment = Assignment(
+            teacher_id=current_user.id,
+            title=assignment_data.title,
+            description=assignment_data.description,
+            word_database_id=assignment_data.word_database_id,
+            due_date=assignment_data.due_date
         )
-        db.add(assignment_word)
+        db.add(assignment)
+        db.flush()  # Get assignment ID
 
-    # Assign to students
-    for student_id in assignment_data.student_ids:
-        assignment_student = AssignmentStudent(
-            assignment_id=assignment.id,
-            student_id=student_id
+        # Add words to assignment
+        for index, word_text in enumerate(assignment_data.words):
+            assignment_word = AssignmentWord(
+                assignment_id=assignment.id,
+                word_text=word_text.lower().strip(),
+                order_index=index
+            )
+            db.add(assignment_word)
+
+        # Assign to students
+        for student_id in assignment_data.student_ids:
+            assignment_student = AssignmentStudent(
+                assignment_id=assignment.id,
+                student_id=student_id
+            )
+            db.add(assignment_student)
+
+        db.commit()
+        db.refresh(assignment)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error while creating assignment: {str(e)}"
         )
-        db.add(assignment_student)
-
-    db.commit()
-    db.refresh(assignment)
 
     # Build response
     return build_assignment_response(assignment, db)
