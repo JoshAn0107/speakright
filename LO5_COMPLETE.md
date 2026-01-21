@@ -79,7 +79,7 @@ class FeedbackService:
 ```
 
 **Impact:**
-- 15 magic numbers extracted to named constants
+- 22 magic numbers extracted to named constants
 - Self-documenting code (ACCURACY_HIGH_THRESHOLD vs. 85)
 - Single point of modification for threshold changes
 - Enables threshold testing (test_feedback_constants.py)
@@ -125,7 +125,7 @@ class FeedbackService:
           │
           ▼
    ┌──────────────┐
-   │  Unit Tests  │ ◄── 103 tests (LO4 strategy)
+   │  Unit Tests  │ ◄── 104 tests (LO4 strategy)
    │    (~15s)    │     Business logic validation
    └──────┬───────┘
           │
@@ -137,7 +137,7 @@ class FeedbackService:
           │
           ▼
    ┌──────────────┐
-   │ System Tests │ ◄── 55 tests
+   │ System Tests │ ◄── 63 tests
    │    (~40s)    │     End-to-end workflows
    └──────┬───────┘
           │
@@ -301,7 +301,7 @@ def test_student(db_session):
 | Create test users manually | Factory functions create users |
 | Generate JWT tokens manually | `auth_headers_*` fixtures |
 | Check results visually | Assertions verify automatically |
-| Run tests one-by-one | `pytest` runs 181 tests in 3 minutes |
+| Run tests one-by-one | `pytest` runs 190 tests in 3 minutes |
 
 **Time Savings:**
 - Manual full test: ~2 hours

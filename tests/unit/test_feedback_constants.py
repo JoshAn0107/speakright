@@ -23,6 +23,19 @@ class TestFeedbackConstants:
         assert hasattr(FeedbackService, 'GOOD_THRESHOLD')
         assert hasattr(FeedbackService, 'OKAY_THRESHOLD')
 
+    def test_grade_threshold_constants_exist(self):
+        """Verify all grade calculation threshold constants are defined"""
+        assert hasattr(FeedbackService, 'GRADE_A_PLUS_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_A_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_A_MINUS_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_B_PLUS_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_B_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_B_MINUS_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_C_PLUS_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_C_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_C_MINUS_THRESHOLD')
+        assert hasattr(FeedbackService, 'GRADE_D_THRESHOLD')
+
     def test_component_thresholds_exist(self):
         """Verify all component score threshold constants are defined"""
         assert hasattr(FeedbackService, 'ACCURACY_LOW_THRESHOLD')

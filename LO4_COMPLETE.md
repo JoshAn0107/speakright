@@ -168,14 +168,14 @@ This ensures tests are deterministic and can run in any order.
 ```
 tests/
 ├── conftest.py          # Shared fixtures (378 lines)
-├── unit/                # 103 tests - business logic isolation
+├── unit/                # 104 tests - business logic isolation
 │   ├── test_feedback_service.py
 │   ├── test_security.py
 │   └── test_pronunciation_service.py
 ├── integration/         # 23 tests - service interactions
 │   ├── test_recording_submission.py
 │   └── test_word_assignment.py
-└── system/              # 55 tests - end-to-end workflows
+└── system/              # 63 tests - end-to-end workflows
     ├── test_authentication_system.py
     ├── test_student_workflow.py
     └── test_teacher_features.py
@@ -185,9 +185,9 @@ tests/
 
 | Level | Tests | % of Total | Matches Strategy |
 |-------|-------|------------|------------------|
-| Unit | 103 | 57% | ✅ Highest priority (business logic) |
+| Unit | 104 | 57% | ✅ Highest priority (business logic) |
 | Integration | 23 | 13% | ✅ Critical touchpoints |
-| System | 55 | 30% | ✅ User workflow validation |
+| System | 63 | 30% | ✅ User workflow validation |
 
 ### Coverage Reflects Prioritisation
 

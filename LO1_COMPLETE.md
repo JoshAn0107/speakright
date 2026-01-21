@@ -24,10 +24,10 @@
 This document demonstrates a comprehensive testing strategy for the ILP Pronunciation Portal, a web-based English pronunciation learning system. The strategy addresses all four components of LO1:
 
 **Verified Test Implementation:**
-- **Unit Tests:** 103 tests across 4 files (backend/app/services)
+- **Unit Tests:** 104 tests across 4 files (backend/app/services)
 - **Integration Tests:** 23 tests across 2 files (service interactions)
-- **System Tests:** 55 tests across 3 files (end-to-end workflows)
-- **Total:** 181 automated tests
+- **System Tests:** 63 tests across 3 files (end-to-end workflows)
+- **Total:** 190 automated tests
 
 **Coverage:**
 - Backend: Comprehensive (unit + integration + system)
@@ -259,10 +259,10 @@ These tests verify complete user journeys as experienced in production. They cat
 
 | Level | Test Count | Purpose | Execution Time |
 |-------|-----------|---------|----------------|
-| Unit | 103 | Fast feedback on business logic | ~3 seconds |
+| Unit | 104 | Fast feedback on business logic | ~3 seconds |
 | Integration | 23 | Verify component interactions | ~5 seconds |
-| System | 55 | Validate end-to-end workflows | ~12 seconds |
-| **Total** | **181** | **Comprehensive confidence** | **~20 seconds** |
+| System | 63 | Validate end-to-end workflows | ~12 seconds |
+| **Total** | **190** | **Comprehensive confidence** | **~20 seconds** |
 
 **Why This Distribution:**
 - **Unit majority (57%):** Fastest feedback, easiest to debug, highest count enables thorough logic coverage
@@ -481,7 +481,7 @@ def test_concurrent_submissions():
 | **Pairwise** | Independent parameters | 6 tests | Efficient when full combinatorial is excessive |
 | **Black-Box** | No natural partitions | ~40 tests | Simple validation of outputs |
 | **Property-Based** | Invariant properties | ~10 tests | Catches subtle violations of mathematical invariants |
-| **System** | End-to-end workflows | 55 tests | Validates complete user journeys |
+| **System** | End-to-end workflows | 63 tests | Validates complete user journeys |
 
 **Key Principle:** The test approach is chosen based on the requirement structure, not arbitrarily. Each approach has clear criteria for when it's most appropriate.
 
@@ -501,7 +501,7 @@ This section critically evaluates the testing strategy, acknowledging limitation
 **Why Comprehensive:**
 - **High Risk:** Bugs in grading or authentication affect all users
 - **High Testability:** Pure functions with deterministic outputs
-- **Fast Execution:** 103 tests run in ~3 seconds
+- **Fast Execution:** 104 tests run in ~3 seconds
 - **Easy Debugging:** Failures point directly to problematic function
 
 **Evidence of Thoroughness:**
@@ -619,34 +619,6 @@ Frontend bugs are typically:
 
 ---
 
-**Performance/Load Testing (Automated)**
-
-**Decision:** No automated load tests in CI pipeline.
-
-**Rationale:**
-
-1. **Environment Requirements:**
-   - Load tests need production-like infrastructure
-   - CI runners have limited resources
-   - Database performance on local SQLite != production PostgreSQL
-
-2. **Different Testing Phase:**
-   - Load tests are pre-production validation
-   - Not needed for every commit
-   - Performed manually before deployment
-
-3. **Documented Baseline:**
-   - Target: API response < 3 seconds
-   - Verified manually with production-like data
-   - Monitored in production, not CI
-
-**Mitigation:**
-- System tests include timing assertions (fail if > 5s)
-- Manual performance testing documented
-- Production monitoring alerts for degradation
-
----
-
 **Full Combinatorial Testing**
 
 **Decision:** Using pairwise instead of full combinatorial for multi-parameter tests.
@@ -716,7 +688,7 @@ System Tests (55 total):
 ├── tests/system/test_student_workflow.py: 20 tests
 └── tests/system/test_teacher_features.py: 16 tests
 
-Total: 181 automated tests
+Total: 190 automated tests
 ```
 
 ### Test Execution Evidence
@@ -753,7 +725,7 @@ Total: 181 automated tests
 
 **1.1 Range of Requirements:** Identified functional, non-functional (measurable), and qualitative requirements across backend and frontend.
 
-**1.2 Level of Requirements:** Defined unit, integration, and system level requirements with 181 implemented tests distributed across all levels.
+**1.2 Level of Requirements:** Defined unit, integration, and system level requirements with 190 implemented tests distributed across all levels.
 
 **1.3 Identifying Test Approaches:** Mapped requirements to appropriate testing techniques (category-partition, pairwise, black-box, property-based, system) with clear justifications.
 
@@ -768,10 +740,10 @@ Total: 181 automated tests
 
 ### Test Coverage Achieved
 
-- **Backend Unit:** 103 tests (business logic)
+- **Backend Unit:** 104 tests (business logic)
 - **Backend Integration:** 23 tests (service interactions)
-- **Backend System:** 55 tests (end-to-end workflows)
-- **Total:** 181 automated tests
+- **Backend System:** 63 tests (end-to-end workflows)
+- **Total:** 190 automated tests
 - **Execution Time:** ~20 seconds
 - **CI Integration:** Automated on every push
 
@@ -787,5 +759,6 @@ Total: 181 automated tests
 - **Repository:** https://github.com/JoshAn0107/speakright
 
 ---
+
 
 **End of LO1 Documentation**

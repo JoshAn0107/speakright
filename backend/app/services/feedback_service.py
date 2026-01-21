@@ -8,11 +8,23 @@ from typing import Dict, List, Optional
 class FeedbackService:
     """Generate automated feedback from pronunciation scores"""
 
-    # Performance level thresholds
+    # Performance level thresholds (for feedback messages)
     EXCELLENT_THRESHOLD = 90
     GREAT_THRESHOLD = 80
     GOOD_THRESHOLD = 70
     OKAY_THRESHOLD = 60
+
+    # Grade calculation boundaries
+    GRADE_A_PLUS_THRESHOLD = 95
+    GRADE_A_THRESHOLD = 90
+    GRADE_A_MINUS_THRESHOLD = 85
+    GRADE_B_PLUS_THRESHOLD = 80
+    GRADE_B_THRESHOLD = 75
+    GRADE_B_MINUS_THRESHOLD = 70
+    GRADE_C_PLUS_THRESHOLD = 65
+    GRADE_C_THRESHOLD = 60
+    GRADE_C_MINUS_THRESHOLD = 55
+    GRADE_D_THRESHOLD = 50
 
     # Component score thresholds
     ACCURACY_LOW_THRESHOLD = 70
@@ -119,25 +131,25 @@ class FeedbackService:
     @staticmethod
     def _calculate_grade(score: float) -> str:
         """Convert numerical score to letter grade"""
-        if score >= 95:
+        if score >= FeedbackService.GRADE_A_PLUS_THRESHOLD:
             return "A+"
-        elif score >= 90:
+        elif score >= FeedbackService.GRADE_A_THRESHOLD:
             return "A"
-        elif score >= 85:
+        elif score >= FeedbackService.GRADE_A_MINUS_THRESHOLD:
             return "A-"
-        elif score >= 80:
+        elif score >= FeedbackService.GRADE_B_PLUS_THRESHOLD:
             return "B+"
-        elif score >= 75:
+        elif score >= FeedbackService.GRADE_B_THRESHOLD:
             return "B"
-        elif score >= 70:
+        elif score >= FeedbackService.GRADE_B_MINUS_THRESHOLD:
             return "B-"
-        elif score >= 65:
+        elif score >= FeedbackService.GRADE_C_PLUS_THRESHOLD:
             return "C+"
-        elif score >= 60:
+        elif score >= FeedbackService.GRADE_C_THRESHOLD:
             return "C"
-        elif score >= 55:
+        elif score >= FeedbackService.GRADE_C_MINUS_THRESHOLD:
             return "C-"
-        elif score >= 50:
+        elif score >= FeedbackService.GRADE_D_THRESHOLD:
             return "D"
         else:
             return "F"

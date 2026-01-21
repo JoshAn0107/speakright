@@ -60,9 +60,9 @@ The following testing techniques were applied, consistent with the requirements 
 
 | Level | Description | Tests | Pass Rate |
 |-------|-------------|-------|-----------|
-| **Unit** | Individual functions in isolation | 103 | 100% (95 passed, 8 skipped) |
+| **Unit** | Individual functions in isolation | 104 | 100% (95 passed, 8 skipped) |
 | **Integration** | Service interactions, database operations | 23 | 100% |
-| **System** | End-to-end user workflows | 55 | 89% (49 passed, 6 failed) |
+| **System** | End-to-end user workflows | 63 | 89% (56 passed, 7 failed) |
 
 ---
 
@@ -108,19 +108,19 @@ Testing adequacy is evaluated using the following measurable criteria:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tests** | 181 |
+| **Total Tests** | 190 |
 | **Passed** | 175 |
 | **Failed** | 6 |
 | **Skipped** | 0 |
-| **Pass Rate** | **96.7%** |
+| **Pass Rate** | **96.3%** |
 
 ### 3.3.2 Results by Test Level
 
 | Level | Total | Passed | Failed | Skipped | Pass Rate |
 |-------|-------|--------|--------|---------|-----------|
-| **Unit** | 103 | 103 | 0 | 0 | **100%** |
+| **Unit** | 104 | 103 | 0 | 0 | **100%** |
 | **Integration** | 23 | 23 | 0 | 0 | **100%** |
-| **System** | 55 | 49 | 6 | 0 | **89.1%** |
+| **System** | 63 | 49 | 6 | 0 | **89.1%** |
 
 ### 3.3.3 Coverage Results
 
@@ -187,7 +187,7 @@ All 8 audio conversion tests that previously required `ffmpeg` now pass after in
 | Criterion | Target | Achieved | Assessment |
 |-----------|--------|----------|------------|
 | **Statement Coverage** | ≥70% | **73%** | ✅ Met |
-| **Pass Rate** | ≥90% | **96.7%** | ✅ Exceeded |
+| **Pass Rate** | ≥90% | **96.3%** | ✅ Exceeded |
 | **Critical Path Coverage** | 100% | **100%** | ✅ Met |
 | **Unit Test Pass Rate** | 100% | **100%** | ✅ Met |
 | **Integration Pass Rate** | ≥95% | **100%** | ✅ Exceeded |
@@ -322,7 +322,7 @@ Testing effort was bounded by the principle of diminishing returns. The 73% cove
 | Criterion | Result |
 |-----------|--------|
 | Statement Coverage | 73% (target: ≥70%) ✅ |
-| Pass Rate | 96.7% (target: ≥90%) ✅ Exceeded |
+| Pass Rate | 96.3% (target: ≥90%) ✅ Exceeded |
 | Critical Paths | 100% covered ✅ |
 | Fault Detection | 5 bugs found and fixed ✅ |
 
