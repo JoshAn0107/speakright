@@ -50,6 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: lint
+    if: always() && needs.lint.result == 'success'
     steps:
       - uses: actions/checkout@v4
 
@@ -91,7 +92,8 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: unit-tests
+    needs: lint
+    if: always() && needs.lint.result == 'success'
     env:
       DATABASE_URL: sqlite:///./test.db
     steps:
@@ -135,7 +137,8 @@ jobs:
     name: System Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: integration-tests
+    needs: lint
+    if: always() && needs.lint.result == 'success'
     env:
       DATABASE_URL: sqlite:///./test.db
     steps:
@@ -180,6 +183,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [unit-tests, integration-tests, system-tests]
+    if: always()
     steps:
       - uses: actions/checkout@v4
 
