@@ -7,6 +7,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -76,7 +81,7 @@ jobs:
 
       - name: Test Report
         uses: dorny/test-reporter@v1
-        if: success() || failure()
+        if: (success() || failure()) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
         with:
           name: Unit Test Results
           path: tests/unit-results.xml
@@ -123,7 +128,7 @@ jobs:
 
       - name: Test Report
         uses: dorny/test-reporter@v1
-        if: success() || failure()
+        if: (success() || failure()) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
         with:
           name: Integration Test Results
           path: tests/integration-results.xml
@@ -170,7 +175,7 @@ jobs:
 
       - name: Test Report
         uses: dorny/test-reporter@v1
-        if: success() || failure()
+        if: (success() || failure()) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
         with:
           name: System Test Results
           path: tests/system-results.xml
