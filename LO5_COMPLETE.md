@@ -125,7 +125,7 @@ class FeedbackService:
           │
           ▼
    ┌──────────────┐
-   │  Unit Tests  │ ◄── 104 tests (LO4 strategy)
+   │  Unit Tests  │ ◄── 114 tests (LO4 strategy)
    │    (~15s)    │     Business logic validation
    └──────┬───────┘
           │
@@ -301,7 +301,7 @@ def test_student(db_session):
 | Create test users manually | Factory functions create users |
 | Generate JWT tokens manually | `auth_headers_*` fixtures |
 | Check results visually | Assertions verify automatically |
-| Run tests one-by-one | `pytest` runs 190 tests in 3 minutes |
+| Run tests one-by-one | `pytest` runs 200 tests in 3 minutes |
 
 **Time Savings:**
 - Manual full test: ~2 hours

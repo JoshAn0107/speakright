@@ -32,7 +32,7 @@
 
 **Pipeline stages:**
 1. **Lint and Format** (30s) - Flake8, Black, isort
-2. **Unit Tests** (15s) - 104 tests
+2. **Unit Tests** (15s) - 114 tests
 3. **Integration Tests** (25s) - 23 tests
 4. **System Tests** (40s) - 63 tests
 5. **Coverage Report** (50s) - 73% coverage achieved
@@ -50,7 +50,7 @@
 **Evidence:**
 - Local script: `run_tests.sh` - Replicates CI environment
 - Fixtures: `tests/conftest.py` - Automated test setup
-- 190 automated tests across 3 levels (104 unit, 23 integration, 63 system)
+- 200 automated tests across 3 levels (104 unit, 23 integration, 63 system)
 - Pytest configuration with asyncio support
 
 **Automation benefits demonstrated:**
@@ -121,7 +121,7 @@ Add to `LO5_CI_CD_Documentation.md` Section 5.4:
 |-----------|--------|---------|----------|
 | **5.1 Review Criteria** | 3-4 | 4/4 | ✅ Checklist + findings doc |
 | **5.2 CI Construction** | 3-4 | 4/4 | ✅ Full pipeline configured |
-| **5.3 Automation** | 3-4 | 4/4 | ✅ 190 tests + fixtures |
+| **5.3 Automation** | 3-4 | 4/4 | ✅ 200 tests + fixtures |
 | **5.4 Demonstration** | 3-4 | 2/4 | ⚠️ Need actual CI runs |
 
 **Current Total:** ~14/16 (87.5%)

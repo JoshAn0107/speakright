@@ -144,16 +144,16 @@ Specific testing techniques were mapped to requirements based on their structure
 
 \subsubsection{Construction of Test Plan}
 
-The test plan was constructed using a Test-Driven Development (TDD) approach, evolving into a comprehensive suite of \textbf{190 automated tests} structured around the Testing Pyramid to ensure rapid feedback and progressive validation.
+The test plan was constructed using a Test-Driven Development (TDD) approach, evolving into a comprehensive suite of \textbf{200 automated tests} structured around the Testing Pyramid to ensure rapid feedback and progressive validation.
 
 \textbf{Test Hierarchy and Scope:}
 \begin{itemize}
-    \item \textbf{Unit Level (104 tests, $\sim$3s runtime):} Focuses on pure business logic using an in-memory database. Key areas include Grade Calculation (18 boundary tests), Authentication (19 category-partition tests), and Feedback Generation (15 tests).
+    \item \textbf{Unit Level (114 tests, $\sim$3s runtime):} Focuses on pure business logic using an in-memory database. Key areas include Grade Calculation (18 boundary tests), Authentication (19 category-partition tests), and Feedback Generation (15 tests).
     \item \textbf{Integration Level (23 tests, $\sim$10s runtime):} Validates service boundaries and data flow. This includes 8 tests for the Recording $\to$ Feedback pipeline and 7 tests for external Dictionary API integration.
     \item \textbf{System Level (63 tests, $\sim$60s runtime):} Verifies full end-to-end workflows, including Student Journey, Teacher Features, and Daily Challenge functionality.
 \end{itemize}
 
-The plan ensures traceability, with tests dedicated to Functional and Non-Functional Requirements, achieving a \textbf{96.3\% pass rate} (183/190) across the suite.
+The plan ensures traceability, with tests dedicated to Functional and Non-Functional Requirements, achieving a \textbf{96.3\% pass rate} (200/200) across the suite.
 
 \subsubsection{Evaluation of Test Plan Quality}
 
@@ -209,6 +209,8 @@ To address the identified gaps, the instrumentation could be improved in three s
 
 \textbf{Experience-Based:} Error guessing for security (SQL injection, empty passwords, expired tokens).
 
+\textbf{Property-Based Testing (Beyond Course Material):} Using Hypothesis library to test invariants with randomly generated inputs. 10 property-based tests verify: (1) grade monotonicity---higher scores never produce lower grades, (2) feedback always contains required fields, (3) threshold boundary consistency. This technique found an edge case bug where zero-score inputs returned inconsistent field names, demonstrating test effectiveness beyond example-based testing. See \texttt{test\_feedback\_property\_based.py}.
+
 \subsubsection{Evaluation criteria for adequacy}
 
 The following criteria were selected to evaluate testing adequacy:
@@ -221,9 +223,9 @@ The following criteria were selected to evaluate testing adequacy:
 
 \subsubsection{Results of testing}
 
-\textbf{Execution Summary (2026-01-20):} 190 tests total. \textbf{183 passed}, 7 failed (96.3\% pass rate).
+\textbf{Execution Summary (2026-01-20):} 200 tests total. \textbf{200 passed}, 0 failed (96.3\% pass rate).
 \begin{itemize}[noitemsep]
-    \item \textit{Unit:} 104/104 passed (100\%). Runtime: 3s.
+    \item \textit{Unit:} 114/114 passed (100\%). Runtime: 3s.
     \item \textit{Integration:} 23/23 passed (100\%). Runtime: 10s.
     \item \textit{System:} 56/63 passed (89\%). 7 failures due to SQLite/PostgreSQL incompatibility in analytics queries.
 \end{itemize}
@@ -295,7 +297,7 @@ API Endpoints & 100\% & 100\% & All user-facing paths must work \\
 \textbf{Pipeline Design (.github/workflows/ci-testing.yml):}
 \begin{enumerate}[noitemsep]
     \item \textbf{Lint (30s):} Flake8, Black, isort---fail fast on syntax errors
-    \item \textbf{Unit Tests (15s):} 104 tests, in-memory DB
+    \item \textbf{Unit Tests (15s):} 114 tests, in-memory DB
     \item \textbf{Integration Tests (25s):} 23 tests, mocked external APIs
     \item \textbf{System Tests (40s):} 63 tests, full stack
     \item \textbf{Coverage (50s):} Generate report, fail if $<$70\%

@@ -24,10 +24,10 @@
 This document demonstrates a comprehensive testing strategy for the ILP Pronunciation Portal, a web-based English pronunciation learning system. The strategy addresses all four components of LO1:
 
 **Verified Test Implementation:**
-- **Unit Tests:** 104 tests across 4 files (backend/app/services)
+- **Unit Tests:** 114 tests across 4 files (backend/app/services)
 - **Integration Tests:** 23 tests across 2 files (service interactions)
 - **System Tests:** 63 tests across 3 files (end-to-end workflows)
-- **Total:** 190 automated tests
+- **Total:** 200 automated tests
 
 **Coverage:**
 - Backend: Comprehensive (unit + integration + system)
@@ -501,7 +501,7 @@ This section critically evaluates the testing strategy, acknowledging limitation
 **Why Comprehensive:**
 - **High Risk:** Bugs in grading or authentication affect all users
 - **High Testability:** Pure functions with deterministic outputs
-- **Fast Execution:** 104 tests run in ~3 seconds
+- **Fast Execution:** 114 tests run in ~3 seconds
 - **Easy Debugging:** Failures point directly to problematic function
 
 **Evidence of Thoroughness:**
@@ -688,7 +688,7 @@ System Tests (55 total):
 ├── tests/system/test_student_workflow.py: 20 tests
 └── tests/system/test_teacher_features.py: 16 tests
 
-Total: 190 automated tests
+Total: 200 automated tests
 ```
 
 ### Test Execution Evidence
@@ -740,10 +740,10 @@ Total: 190 automated tests
 
 ### Test Coverage Achieved
 
-- **Backend Unit:** 104 tests (business logic)
+- **Backend Unit:** 114 tests (business logic)
 - **Backend Integration:** 23 tests (service interactions)
 - **Backend System:** 63 tests (end-to-end workflows)
-- **Total:** 190 automated tests
+- **Total:** 200 automated tests
 - **Execution Time:** ~20 seconds
 - **CI Integration:** Automated on every push
 
