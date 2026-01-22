@@ -12,7 +12,8 @@ from app.core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT token bearer
-security = HTTPBearer()
+# Use auto_error=False so we can consistently return 401 for missing/malformed headers.
+security = HTTPBearer(auto_error=False)
 
 
 def _prehash_password(password: str) -> str:
@@ -57,6 +58,13 @@ def decode_access_token(token: str) -> Optional[dict]:
 
 def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> int:
     """Extract user ID from JWT token"""
+    if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     token = credentials.credentials
     payload = decode_access_token(token)
 

@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List
+from typing import List, Optional
 import random
+import asyncio
 
 from app.db.session import get_db
 from app.api.deps import get_current_user, get_current_teacher
@@ -44,16 +45,31 @@ async def get_word(word: str, db: Session = Depends(get_db)):
 @router.get("/words/daily/challenge", response_model=WordResponse)
 async def get_daily_word(db: Session = Depends(get_db)):
     """Get a daily challenge word"""
+    async def _safe_dictionary_lookup(word: str) -> Optional[dict]:
+        try:
+            return await asyncio.wait_for(dictionary_service.get_word_data(word), timeout=2.0)
+        except (asyncio.TimeoutError, Exception):
+            return None
 
     # Get a random word from database
     word_assignment = db.query(WordAssignment).order_by(func.random()).first()
 
     if word_assignment:
-        word_data = await dictionary_service.get_word_data(word_assignment.word_text)
+        word_data = await _safe_dictionary_lookup(word_assignment.word_text)
         if word_data:
             word_data['difficulty_level'] = word_assignment.difficulty_level
             word_data['topic_tags'] = word_assignment.topic_tags
             return word_data
+        # Fall back to minimal data if dictionary lookup fails
+        return {
+            "word": word_assignment.word_text,
+            "phonetic": None,
+            "audio_url": None,
+            "meanings": [],
+            "source": "fallback",
+            "difficulty_level": word_assignment.difficulty_level,
+            "topic_tags": word_assignment.topic_tags,
+        }
 
     # Fallback to a predefined common word
     common_words = [
@@ -62,14 +78,17 @@ async def get_daily_word(db: Session = Depends(get_db)):
     ]
     daily_word = random.choice(common_words)
 
-    word_data = await dictionary_service.get_word_data(daily_word)
-    if not word_data:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Could not fetch daily word"
-        )
+    word_data = await _safe_dictionary_lookup(daily_word)
+    if word_data:
+        return word_data
 
-    return word_data
+    return {
+        "word": daily_word,
+        "phonetic": None,
+        "audio_url": None,
+        "meanings": [],
+        "source": "fallback",
+    }
 
 
 @router.get("/words/topic/{topic}", response_model=List[WordResponse])
