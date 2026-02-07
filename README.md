@@ -208,4 +208,6 @@ sudo docker compose ps
 sudo docker compose logs -f
 ```
 
-**📖 For detailed manual deployment with troubleshooting, see [MANUAL_DEPLOY.md](./MANUAL_DEPLOY.md)**
+**📖 For detailed manual deployment with troubleshooting, see [MANUAL_DEPLOY.md](./MANUAL_DEPLOY.md)**# speakright
+# speakright
+# speakright
