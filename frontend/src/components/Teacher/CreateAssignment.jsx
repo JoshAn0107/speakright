@@ -47,7 +47,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
       setDatabases(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading databases:', error);
-      alert('Failed to load word databases');
+      alert('加载词库失败');
       setDatabases([]);
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
       setAvailableWords(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading words:', error);
-      alert('Failed to load words from database');
+      alert('从词库加载单词失败');
       setAvailableWords([]);
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
       console.error('Error loading students:', error);
       // Don't fail silently - set empty array so UI still works
       setStudents([]);
-      alert('Warning: Could not load students list. You can still create the assignment.');
+      alert('警告：无法加载学生列表。你仍然可以创建作业。');
     }
   };
 
@@ -96,7 +96,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
       if (selectedWords.length < 40) {
         setSelectedWords([...selectedWords, word]);
       } else {
-        alert('Maximum 40 words allowed per assignment');
+        alert('每份作业最多可选 40 个单词');
       }
     }
   };
@@ -127,17 +127,17 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
   const handleSubmit = async () => {
     // Validation
     if (!title.trim()) {
-      alert('Please enter an assignment title');
+      alert('请输入作业标题');
       return;
     }
 
     if (selectedWords.length < 20 || selectedWords.length > 40) {
-      alert('Please select between 20 and 40 words');
+      alert('请选择 20 到 40 个单词');
       return;
     }
 
     if (selectedStudents.length === 0) {
-      alert('Please select at least one student');
+      alert('请至少选择一名学生');
       return;
     }
 
@@ -155,14 +155,14 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
 
       await assignmentService.createAssignment(assignmentData);
 
-      alert(`Assignment created successfully and assigned to ${selectedStudents.length} student(s)!`);
+      alert(`作业创建成功，并已分配给 ${selectedStudents.length} 名学生！`);
 
       if (onAssignmentCreated) {
         onAssignmentCreated();
       }
     } catch (error) {
       console.error('Error creating assignment:', error);
-      alert(error.response?.data?.detail || 'Failed to create assignment');
+      alert(error.response?.data?.detail || '创建作业失败');
     } finally {
       setSubmitting(false);
     }
@@ -178,10 +178,10 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Assignments
+          返回作业列表
         </button>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Create New Assignment</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">创建新作业</h1>
 
         {/* Progress Indicator */}
         <div className="flex items-center justify-center mb-8">
@@ -204,13 +204,13 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
         {step === 1 && (
           <div className="space-y-6">
             <div className="card">
-              <h2 className="text-xl font-semibold mb-4">Select Word Database</h2>
-              <p className="text-gray-600 mb-6">Choose a word database to select words from</p>
+              <h2 className="text-xl font-semibold mb-4">选择词库</h2>
+              <p className="text-gray-600 mb-6">选择一个词库来挑选单词</p>
 
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading databases...</p>
+                  <p className="mt-4 text-gray-600">正在加载词库...</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -224,7 +224,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
                       <h3 className="font-semibold text-lg mb-2">{database.name}</h3>
                       <p className="text-sm text-gray-600 mb-2">{database.description}</p>
                       <p className="text-sm font-medium text-primary-600">
-                        {database.word_count} words available
+                        可用单词 {database.word_count} 个
                       </p>
                     </button>
                   ))}
@@ -240,7 +240,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
             <div className="card">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">
-                  Select Words ({selectedWords.length}/40)
+                  选择单词（{selectedWords.length}/40）
                 </h2>
                 <span className={`px-3 py-1 rounded-full text-sm ${
                   canProceedToStep3
@@ -248,21 +248,21 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
                     : 'bg-yellow-100 text-yellow-800'
                 }`}>
                   {selectedWords.length < 20
-                    ? `Need ${20 - selectedWords.length} more`
+                    ? `还需要 ${20 - selectedWords.length} 个`
                     : canProceedToStep3
-                    ? 'Ready to proceed'
-                    : 'Max 40 words'}
+                    ? '可以继续'
+                    : '最多 40 个'}
                 </span>
               </div>
 
               <p className="text-gray-600 mb-4">
-                From <strong>{selectedDatabase?.name}</strong> - Select 20 to 40 words for this assignment
+                来自 <strong>{selectedDatabase?.name}</strong> — 请选择 20 到 40 个单词
               </p>
 
               {/* Search */}
               <input
                 type="text"
-                placeholder="Search words..."
+                placeholder="搜索单词..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="input-field mb-4"
@@ -313,14 +313,14 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
                   }}
                   className="flex-1 btn-secondary"
                 >
-                  Change Database
+                  更换词库
                 </button>
                 <button
                   onClick={() => setStep(3)}
                   disabled={!canProceedToStep3}
                   className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Next: Assign Students
+                  下一步：分配学生
                 </button>
               </div>
             </div>
@@ -331,30 +331,30 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
         {step === 3 && (
           <div className="space-y-6">
             <div className="card">
-              <h2 className="text-xl font-semibold mb-4">Assignment Details</h2>
+              <h2 className="text-xl font-semibold mb-4">作业详情</h2>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Title *
+                    标题 *
                   </label>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g., Week 1 IELTS Vocabulary"
+                    placeholder="例如：第 1 周 IELTS 词汇"
                     className="input-field"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
+                    说明
                   </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Optional: Add instructions or notes for students"
+                    placeholder="可选：给学生的说明或备注"
                     rows="3"
                     className="input-field"
                   />
@@ -362,7 +362,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Due Date
+                    截止日期
                   </label>
                   <input
                     type="datetime-local"
@@ -374,8 +374,8 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
 
                 <div className="border-t pt-4">
                   <p className="text-sm text-gray-600">
-                    <strong>Word Database:</strong> {selectedDatabase?.name}<br />
-                    <strong>Words Selected:</strong> {selectedWords.length} words
+                    <strong>词库：</strong> {selectedDatabase?.name}<br />
+                    <strong>已选单词：</strong> {selectedWords.length} 个
                   </p>
                 </div>
               </div>
@@ -384,21 +384,21 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
             <div className="card">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">
-                  Assign to Students ({selectedStudents.length})
+                  分配给学生（{selectedStudents.length}）
                 </h2>
                 <div className="flex gap-2">
                   <button
                     onClick={selectAllStudents}
                     className="text-sm text-primary-600 hover:text-primary-700"
                   >
-                    Select All
+                    全选
                   </button>
                   <span className="text-gray-400">|</span>
                   <button
                     onClick={deselectAllStudents}
                     className="text-sm text-gray-600 hover:text-gray-700"
                   >
-                    Deselect All
+                    全不选
                   </button>
                 </div>
               </div>
@@ -426,7 +426,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
                 onClick={() => setStep(2)}
                 className="flex-1 btn-secondary"
               >
-                Back to Words
+                返回选词
               </button>
               <button
                 onClick={handleSubmit}
@@ -436,12 +436,12 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
                 {submitting ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Creating...
+                    正在创建...
                   </>
                 ) : (
                   <>
                     <Plus className="w-5 h-5 mr-2" />
-                    Create Assignment
+                    创建作业
                   </>
                 )}
               </button>

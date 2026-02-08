@@ -33,7 +33,7 @@ function AssignmentPractice({ assignment, onBack }) {
       }
     } catch (error) {
       console.error('Error loading assignment details:', error);
-      alert('Failed to load assignment details');
+      alert('加载作业详情失败');
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ function AssignmentPractice({ assignment, onBack }) {
       }
     } catch (error) {
       console.error('Error submitting word:', error);
-      alert('Failed to submit word. Please try again.');
+      alert('提交单词失败，请重试。');
     }
   };
 
@@ -81,7 +81,7 @@ function AssignmentPractice({ assignment, onBack }) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading assignment...</p>
+            <p className="mt-4 text-gray-600">正在加载作业...</p>
           </div>
         </div>
       </div>
@@ -102,7 +102,7 @@ function AssignmentPractice({ assignment, onBack }) {
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Assignments
+          返回作业列表
         </button>
 
         {/* Assignment Header */}
@@ -120,9 +120,9 @@ function AssignmentPractice({ assignment, onBack }) {
           {progress && (
             <div className="mt-4">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">Progress</span>
+                <span className="text-sm font-medium text-gray-700">进度</span>
                 <span className="text-sm font-semibold text-primary-600">
-                  {progress.completed_words}/{progress.total_words} words
+                  {progress.completed_words}/{progress.total_words} 个单词
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
@@ -149,9 +149,9 @@ function AssignmentPractice({ assignment, onBack }) {
           <div className="card bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 mb-6">
             <div className="text-center">
               <Trophy className="w-16 h-16 text-green-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Congratulations!</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">恭喜！</h2>
               <p className="text-gray-700">
-                You've completed all words in this assignment!
+                你已完成本次作业的所有单词！
               </p>
             </div>
           </div>
@@ -169,7 +169,7 @@ function AssignmentPractice({ assignment, onBack }) {
                   className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="w-5 h-5 mr-1" />
-                  Previous
+                  上一个
                 </button>
 
                 <div className="text-center flex-1">
@@ -180,11 +180,11 @@ function AssignmentPractice({ assignment, onBack }) {
                     )}
                   </div>
                   <p className="text-sm text-gray-600">
-                    Word {currentWordIndex + 1} of {words.length}
+                    第 {currentWordIndex + 1} / {words.length} 个单词
                   </p>
                   {currentWord.submitted && currentWord.score && (
                     <p className="text-sm text-green-600 font-medium mt-1">
-                      Previous score: {currentWord.score}
+                      上次得分：{currentWord.score}
                     </p>
                   )}
                 </div>
@@ -194,7 +194,7 @@ function AssignmentPractice({ assignment, onBack }) {
                   disabled={currentWordIndex === words.length - 1}
                   className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  Next
+                  下一个
                   <ChevronRight className="w-5 h-5 ml-1" />
                 </button>
               </div>
@@ -212,7 +212,7 @@ function AssignmentPractice({ assignment, onBack }) {
                         ? 'bg-green-500'
                         : 'bg-gray-300'
                     }`}
-                    title={`${word.word_text}${word.submitted ? ' (completed)' : ''}`}
+                    title={`${word.word_text}${word.submitted ? '（已完成）' : ''}`}
                   />
                 ))}
               </div>
@@ -229,7 +229,7 @@ function AssignmentPractice({ assignment, onBack }) {
             <div className="card">
               <h3 className="font-semibold text-lg mb-4 flex items-center">
                 <BookOpen className="w-5 h-5 mr-2" />
-                All Words
+                全部单词
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                 {words.map((word, index) => (

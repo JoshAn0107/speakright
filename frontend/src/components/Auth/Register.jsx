@@ -28,7 +28,7 @@ function Register() {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('两次输入的密码不一致');
       return;
     }
 
@@ -49,7 +49,7 @@ function Register() {
         navigate('/teacher');
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+      setError(err.response?.data?.detail || '注册失败，请重试。');
     } finally {
       setLoading(false);
     }
@@ -63,8 +63,8 @@ function Register() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
               <UserPlus className="w-8 h-8 text-primary-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-            <p className="text-gray-600 mt-2">Start your pronunciation journey</p>
+            <h1 className="text-3xl font-bold text-gray-900">创建账号</h1>
+            <p className="text-gray-600 mt-2">开始你的发音之旅</p>
           </div>
 
           {error && (
@@ -77,7 +77,7 @@ function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username
+                用户名
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -95,7 +95,7 @@ function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                邮箱
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -113,7 +113,7 @@ function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                密码
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -131,7 +131,7 @@ function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
+                确认密码
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -149,7 +149,7 @@ function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                I am a...
+                我是...
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <label className={`cursor-pointer rounded-lg border-2 p-3 text-center transition-colors ${
@@ -165,8 +165,8 @@ function Register() {
                     onChange={handleChange}
                     className="sr-only"
                   />
-                  <div className="font-medium">Student</div>
-                  <div className="text-xs text-gray-500 mt-1">Learn & practice</div>
+                  <div className="font-medium">学生</div>
+                  <div className="text-xs text-gray-500 mt-1">学习与练习</div>
                 </label>
 
                 <label className={`cursor-pointer rounded-lg border-2 p-3 text-center transition-colors ${
@@ -182,8 +182,8 @@ function Register() {
                     onChange={handleChange}
                     className="sr-only"
                   />
-                  <div className="font-medium">Teacher</div>
-                  <div className="text-xs text-gray-500 mt-1">Review & guide</div>
+                  <div className="font-medium">教师</div>
+                  <div className="text-xs text-gray-500 mt-1">批改与指导</div>
                 </label>
               </div>
             </div>
@@ -193,15 +193,15 @@ function Register() {
               disabled={loading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? '正在创建账号...' : '创建账号'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
+              已有账号？{' '}
               <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-                Sign in
+                登录
               </Link>
             </p>
           </div>

@@ -16,7 +16,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
       const audio = new Audio(audioUrl);
       audio.play().catch(err => {
         console.error('Error playing audio:', err);
-        alert('Could not play audio file');
+        alert('无法播放音频文件');
       });
     }
   };
@@ -37,7 +37,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      alert('Failed to submit feedback. Please try again.');
+      alert('提交反馈失败，请重试。');
     } finally {
       setSubmitting(false);
     }
@@ -55,7 +55,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Submissions
+          返回提交列表
         </button>
 
         {/* Student Info & Word */}
@@ -66,20 +66,20 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                 {submission.word_text}
               </h1>
               <p className="text-gray-600">
-                Student: <span className="font-medium">{submission.student_name}</span>
+                学生：<span className="font-medium">{submission.student_name}</span>
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                Submitted: {new Date(submission.created_at).toLocaleString()}
+                提交时间：{new Date(submission.created_at).toLocaleString()}
               </p>
             </div>
             <div>
               {submission.is_automated_feedback ? (
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                  AI-Generated Feedback
+                  AI生成反馈
                 </span>
               ) : (
                 <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                  Manually Reviewed
+                  已人工评阅
                 </span>
               )}
             </div>
@@ -88,40 +88,40 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
 
         {/* Audio Player */}
         <div className="card mb-6 bg-gradient-to-br from-purple-50 to-purple-100">
-          <h3 className="font-semibold mb-4">Student Recording</h3>
+          <h3 className="font-semibold mb-4">学生录音</h3>
           <button
             onClick={playAudio}
             className="btn-primary flex items-center"
           >
             <Volume2 className="w-5 h-5 mr-2" />
-            Play Recording
+            播放录音
           </button>
         </div>
 
         {/* Automated Scores */}
         <div className="card mb-6">
-          <h3 className="font-semibold text-lg mb-4">Automated Assessment</h3>
+          <h3 className="font-semibold text-lg mb-4">自动评估</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-sm text-gray-600 mb-1">Pronunciation</div>
+              <div className="text-sm text-gray-600 mb-1">发音</div>
               <div className="text-3xl font-bold text-primary-600">
                 {submission.automated_scores?.pronunciation_score?.toFixed(0) || 0}%
               </div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-sm text-gray-600 mb-1">Accuracy</div>
+              <div className="text-sm text-gray-600 mb-1">准确度</div>
               <div className="text-3xl font-bold text-green-600">
                 {submission.automated_scores?.accuracy_score?.toFixed(0) || 0}%
               </div>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
-              <div className="text-sm text-gray-600 mb-1">Fluency</div>
+              <div className="text-sm text-gray-600 mb-1">流利度</div>
               <div className="text-3xl font-bold text-yellow-600">
                 {submission.automated_scores?.fluency_score?.toFixed(0) || 0}%
               </div>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-sm text-gray-600 mb-1">Completeness</div>
+              <div className="text-sm text-gray-600 mb-1">完整度</div>
               <div className="text-3xl font-bold text-purple-600">
                 {submission.automated_scores?.completeness_score?.toFixed(0) || 0}%
               </div>
@@ -131,7 +131,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
           {/* Phoneme Breakdown */}
           {submission.automated_scores?.words?.[0]?.phonemes && (
             <div className="mt-6">
-              <h4 className="font-medium mb-3">Phoneme Analysis</h4>
+              <h4 className="font-medium mb-3">音素分析</h4>
               <div className="flex flex-wrap gap-2">
                 {submission.automated_scores.words[0].phonemes.map((phoneme, index) => (
                   <div
@@ -156,11 +156,11 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
         {/* Current AI Feedback */}
         {submission.teacher_feedback && submission.is_automated_feedback && (
           <div className="card mb-6 bg-blue-50 border border-blue-200">
-            <h3 className="font-semibold mb-3">Current AI Feedback</h3>
+            <h3 className="font-semibold mb-3">当前AI反馈</h3>
             <p className="text-gray-700 whitespace-pre-line">{submission.teacher_feedback}</p>
             {submission.teacher_grade && (
               <p className="mt-2 text-sm">
-                <strong>Grade:</strong> {submission.teacher_grade}
+                <strong>等级：</strong> {submission.teacher_grade}
               </p>
             )}
           </div>
@@ -169,13 +169,13 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
         {/* Teacher Feedback Form */}
         <form onSubmit={handleSubmit} className="card">
           <h3 className="font-semibold text-lg mb-4">
-            {submission.is_automated_feedback ? 'Modify or Add Feedback' : 'Your Feedback'}
+            {submission.is_automated_feedback ? '修改或补充反馈' : '你的反馈'}
           </h3>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Feedback Text
+                反馈内容
               </label>
               <textarea
                 value={feedbackText}
@@ -184,28 +184,28 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                 rows="6"
                 placeholder={
                   submission.is_automated_feedback
-                    ? 'Add your personal comments to the AI-generated feedback...'
-                    : 'Enter your feedback for the student...'
+                    ? '添加你对AI反馈的补充意见...'
+                    : '输入你的反馈...'
                 }
               />
               <p className="mt-1 text-xs text-gray-500">
                 {submission.is_automated_feedback
-                  ? 'Your feedback will replace the AI-generated feedback'
-                  : 'Provide constructive feedback to help the student improve'}
+                  ? '你的反馈将替换AI生成的反馈'
+                  : '提供建设性反馈以帮助学生改进'}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Grade
+                  等级
                 </label>
                 <select
                   value={grade}
                   onChange={(e) => setGrade(e.target.value)}
                   className="input-field"
                 >
-                  <option value="">Select grade...</option>
+                  <option value="">选择等级...</option>
                   {gradeOptions.map((g) => (
                     <option key={g} value={g}>
                       {g}
@@ -224,7 +224,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                   />
                   <Flag className="w-5 h-5 ml-2 mr-1 text-orange-500" />
                   <span className="text-sm font-medium text-gray-700">
-                    Flag for Additional Practice
+                    标记为需要额外练习
                   </span>
                 </label>
               </div>
@@ -236,7 +236,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                 onClick={onBack}
                 className="flex-1 btn-secondary"
               >
-                Cancel
+                取消
               </button>
               <button
                 type="submit"
@@ -244,7 +244,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                 className="flex-1 btn-primary disabled:opacity-50 flex items-center justify-center"
               >
                 <Save className="w-5 h-5 mr-2" />
-                {submitting ? 'Saving...' : 'Save Feedback'}
+                {submitting ? '保存中...' : '保存反馈'}
               </button>
             </div>
           </div>

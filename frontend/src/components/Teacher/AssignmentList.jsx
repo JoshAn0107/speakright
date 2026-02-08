@@ -28,7 +28,7 @@ function AssignmentList({ onBackToDashboard }) {
       setAssignments(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading assignments:', error);
-      setError(error.message || 'Failed to load assignments');
+      setError(error.message || '加载作业失败');
       setAssignments([]);
     } finally {
       setLoading(false);
@@ -36,17 +36,17 @@ function AssignmentList({ onBackToDashboard }) {
   };
 
   const handleDeleteAssignment = async (assignmentId) => {
-    if (!confirm('Are you sure you want to delete this assignment? This action cannot be undone.')) {
+    if (!confirm('确定要删除这份作业吗？此操作无法撤销。')) {
       return;
     }
 
     try {
       await assignmentService.deleteAssignment(assignmentId);
-      alert('Assignment deleted successfully');
+      alert('作业已删除');
       loadAssignments();
     } catch (error) {
       console.error('Error deleting assignment:', error);
-      alert('Failed to delete assignment');
+      alert('删除作业失败');
     }
   };
 
@@ -89,14 +89,14 @@ function AssignmentList({ onBackToDashboard }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold text-gray-900">Word Assignments</h1>
+            <h1 className="text-3xl font-bold text-gray-900">单词作业</h1>
             {onBackToDashboard && (
               <button
                 onClick={onBackToDashboard}
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors text-sm"
               >
                 <Home className="w-4 h-4 mr-1" />
-                Dashboard
+                仪表盘
               </button>
             )}
           </div>
@@ -105,7 +105,7 @@ function AssignmentList({ onBackToDashboard }) {
             className="btn-primary flex items-center"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Create Assignment
+            创建作业
           </button>
         </div>
 
@@ -114,7 +114,7 @@ function AssignmentList({ onBackToDashboard }) {
             <div className="flex items-center text-red-800">
               <AlertCircle className="w-5 h-5 mr-2" />
               <div>
-                <p className="font-medium">Error loading assignments</p>
+                <p className="font-medium">加载作业失败</p>
                 <p className="text-sm mt-1">{error}</p>
               </div>
             </div>
@@ -122,7 +122,7 @@ function AssignmentList({ onBackToDashboard }) {
               onClick={loadAssignments}
               className="mt-4 btn-secondary text-sm"
             >
-              Try Again
+              重试
             </button>
           </div>
         )}
@@ -130,21 +130,21 @@ function AssignmentList({ onBackToDashboard }) {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading assignments...</p>
+            <p className="mt-4 text-gray-600">正在加载作业...</p>
           </div>
         ) : assignments.length === 0 && !error ? (
           <div className="card text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments yet</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">目前没有作业</h3>
             <p className="text-gray-600 mb-6">
-              Create your first word assignment to help students practice pronunciation
+              创建你的第一个单词作业，帮助学生练习发音
             </p>
             <button
               onClick={() => setView('create')}
               className="btn-primary inline-flex items-center"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Create First Assignment
+              创建首个作业
             </button>
           </div>
         ) : (
@@ -164,7 +164,7 @@ function AssignmentList({ onBackToDashboard }) {
                         {isOverdue && (
                           <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full flex items-center">
                             <AlertCircle className="w-3 h-3 mr-1" />
-                            Overdue
+                            已逾期
                           </span>
                         )}
                       </div>
@@ -182,22 +182,22 @@ function AssignmentList({ onBackToDashboard }) {
                         )}
                         <div className="flex items-center">
                           <BookOpen className="w-4 h-4 mr-1" />
-                          {assignment.word_count} words
+                          {assignment.word_count} 个单词
                         </div>
                         <div className="flex items-center">
                           <Users className="w-4 h-4 mr-1" />
-                          {assignment.student_count} student{assignment.student_count !== 1 ? 's' : ''}
+                          {assignment.student_count} 名学生
                         </div>
                         {dueDate && (
                           <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-1" />
-                            Due: {dueDate.toLocaleDateString()}
+                            截止：{dueDate.toLocaleDateString()}
                           </div>
                         )}
                       </div>
 
                       <div className="mt-4 text-xs text-gray-500">
-                        Created: {new Date(assignment.created_at).toLocaleDateString()}
+                        创建日期：{new Date(assignment.created_at).toLocaleDateString()}
                       </div>
                     </div>
 
@@ -205,15 +205,15 @@ function AssignmentList({ onBackToDashboard }) {
                       <button
                         onClick={() => viewProgress(assignment)}
                         className="btn-secondary flex items-center text-sm"
-                        title="View Progress"
+                        title="查看进度"
                       >
                         <BarChart3 className="w-4 h-4 mr-1" />
-                        Progress
+                        进度
                       </button>
                       <button
                         onClick={() => handleDeleteAssignment(assignment.id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Assignment"
+                        title="删除作业"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -223,7 +223,7 @@ function AssignmentList({ onBackToDashboard }) {
                   {/* Word Preview */}
                   {assignment.words && assignment.words.length > 0 && (
                     <div className="mt-4 pt-4 border-t">
-                      <p className="text-sm text-gray-600 mb-2">Words in this assignment:</p>
+                      <p className="text-sm text-gray-600 mb-2">本次作业的单词：</p>
                       <div className="flex flex-wrap gap-2">
                         {assignment.words.slice(0, 10).map((word) => (
                           <span
@@ -235,7 +235,7 @@ function AssignmentList({ onBackToDashboard }) {
                         ))}
                         {assignment.words.length > 10 && (
                           <span className="px-2 py-1 bg-gray-200 text-gray-600 text-sm rounded">
-                            +{assignment.words.length - 10} more
+                            还有 +{assignment.words.length - 10} 个
                           </span>
                         )}
                       </div>

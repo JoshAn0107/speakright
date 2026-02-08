@@ -14,6 +14,11 @@ function StudentDashboard() {
   const [error, setError] = useState('');
   const [progress, setProgress] = useState(null);
   const [recentRecordings, setRecentRecordings] = useState([]);
+  const difficultyLabelMap = {
+    beginner: '入门',
+    intermediate: '中级',
+    advanced: '高级',
+  };
 
   useEffect(() => {
     loadDailyWord();
@@ -61,7 +66,7 @@ function StudentDashboard() {
       const data = await wordService.getWord(word);
       setWordData(data);
     } catch (err) {
-      setError('Word not found. Please try another word.');
+      setError('未找到该单词，请尝试其他单词。');
     } finally {
       setLoading(false);
     }
@@ -92,7 +97,7 @@ function StudentDashboard() {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            Practice
+            练习
           </button>
           <button
             onClick={() => setActiveTab('assignments')}
@@ -103,7 +108,7 @@ function StudentDashboard() {
             }`}
           >
             <BookOpen className="w-4 h-4 mr-2" />
-            Assignments
+            作业
           </button>
           <button
             onClick={() => setActiveTab('progress')}
@@ -113,7 +118,7 @@ function StudentDashboard() {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            My Progress
+            我的进度
           </button>
         </div>
 
@@ -123,7 +128,7 @@ function StudentDashboard() {
             <div className="lg:col-span-2 space-y-6">
               {/* Search Word */}
               <div className="card">
-                <h2 className="text-xl font-bold mb-4">Practice a Word</h2>
+                <h2 className="text-xl font-bold mb-4">练习单词</h2>
                 <form onSubmit={searchWord} className="flex gap-2">
                   <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -132,11 +137,11 @@ function StudentDashboard() {
                       value={word}
                       onChange={(e) => setWord(e.target.value)}
                       className="input-field pl-10"
-                      placeholder="Enter a word to practice..."
+                      placeholder="输入要练习的单词..."
                     />
                   </div>
                   <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Searching...' : 'Search'}
+                    {loading ? '搜索中...' : '搜索'}
                   </button>
                 </form>
                 {error && (
@@ -162,7 +167,7 @@ function StudentDashboard() {
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {wordData.difficulty_level}
+                          {difficultyLabelMap[wordData.difficulty_level] || wordData.difficulty_level}
                     </span>
                   )}
 
@@ -173,12 +178,12 @@ function StudentDashboard() {
                           {wordData.meanings[0].partOfSpeech}
                         </span>
                         <p className="text-gray-700">
-                          <strong>Definition:</strong> {wordData.meanings[0].definition}
+                          <strong>释义：</strong> {wordData.meanings[0].definition}
                         </p>
                       </div>
                       {wordData.meanings[0].example && (
                         <p className="text-gray-600 italic">
-                          <strong>Example:</strong> "{wordData.meanings[0].example}"
+                          <strong>例句：</strong> "{wordData.meanings[0].example}"
                         </p>
                       )}
                     </div>
@@ -201,12 +206,12 @@ function StudentDashboard() {
               {/* Progress Stats */}
               {progress && (
                 <div className="card">
-                  <h3 className="text-lg font-semibold mb-4">This Week</h3>
+                  <h3 className="text-lg font-semibold mb-4">本周</h3>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-600">Words Practiced</span>
+                        <span className="text-sm text-gray-600">已练习单词</span>
                       </div>
                       <span className="text-2xl font-bold text-gray-900">
                         {progress.words_practiced}
@@ -215,7 +220,7 @@ function StudentDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <Award className="w-5 h-5 text-yellow-500 mr-2" />
-                        <span className="text-sm text-gray-600">Avg Score</span>
+                        <span className="text-sm text-gray-600">平均分</span>
                       </div>
                       <span className="text-2xl font-bold text-gray-900">
                         {progress.average_score}%
@@ -224,10 +229,10 @@ function StudentDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <Flame className="w-5 h-5 text-orange-500 mr-2" />
-                        <span className="text-sm text-gray-600">Streak</span>
+                        <span className="text-sm text-gray-600">连续天数</span>
                       </div>
                       <span className="text-2xl font-bold text-gray-900">
-                        {progress.streak_count} days
+                        {progress.streak_count} 天
                       </span>
                     </div>
                   </div>
@@ -237,7 +242,7 @@ function StudentDashboard() {
               {/* Recent Recordings */}
               {recentRecordings.length > 0 && (
                 <div className="card">
-                  <h3 className="text-lg font-semibold mb-4">Recent Practice</h3>
+                  <h3 className="text-lg font-semibold mb-4">最近练习</h3>
                   <div className="space-y-3">
                     {recentRecordings.map((recording) => (
                       <div
@@ -260,7 +265,7 @@ function StudentDashboard() {
                               </div>
                               {recording.teacher_grade && (
                                 <div className="text-sm text-gray-600">
-                                  Grade: {recording.teacher_grade}
+                                  等级：{recording.teacher_grade}
                                 </div>
                               )}
                             </div>
@@ -277,7 +282,7 @@ function StudentDashboard() {
 
         {activeTab === 'progress' && (
           <div className="card">
-            <h2 className="text-2xl font-bold mb-6">My Progress</h2>
+            <h2 className="text-2xl font-bold mb-6">我的进度</h2>
             {progress && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
@@ -285,26 +290,26 @@ function StudentDashboard() {
                   <div className="text-3xl font-bold text-gray-900">
                     {progress.words_practiced}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Words Practiced</div>
+                  <div className="text-sm text-gray-600 mt-1">已练习单词</div>
                 </div>
                 <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
                   <Award className="w-12 h-12 text-green-600 mx-auto mb-3" />
                   <div className="text-3xl font-bold text-gray-900">
                     {progress.average_score}%
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Average Score</div>
+                  <div className="text-sm text-gray-600 mt-1">平均分</div>
                 </div>
                 <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
                   <Flame className="w-12 h-12 text-orange-600 mx-auto mb-3" />
                   <div className="text-3xl font-bold text-gray-900">
                     {progress.streak_count}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Day Streak</div>
+                  <div className="text-sm text-gray-600 mt-1">连续天数</div>
                 </div>
               </div>
             )}
 
-            <h3 className="text-xl font-semibold mb-4">All Recordings</h3>
+            <h3 className="text-xl font-semibold mb-4">所有录音</h3>
             <div className="space-y-3">
               {recentRecordings.map((recording) => (
                 <div
@@ -321,13 +326,13 @@ function StudentDashboard() {
                       </div>
                       {recording.teacher_feedback && (
                         <div className="mt-2 text-sm text-gray-700">
-                          <strong>Feedback:</strong> {recording.teacher_feedback}
+                          <strong>反馈：</strong> {recording.teacher_feedback}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary-600">
-                        {recording.automated_scores?.pronunciation_score?.toFixed(0) || 'N/A'}%
+                        {recording.automated_scores?.pronunciation_score?.toFixed(0) || '无'}%
                       </div>
                       {recording.teacher_grade && (
                         <div className="text-lg font-medium text-gray-900 mt-1">

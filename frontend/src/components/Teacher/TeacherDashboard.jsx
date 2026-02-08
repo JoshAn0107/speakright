@@ -95,7 +95,7 @@ function TeacherDashboard() {
             }`}
           >
             <FileText className="w-4 h-4 mr-2" />
-            Submissions
+            提交记录
           </button>
           <button
             onClick={() => setActiveTab('students')}
@@ -106,7 +106,7 @@ function TeacherDashboard() {
             }`}
           >
             <Users className="w-4 h-4 mr-2" />
-            Students
+            学生
           </button>
           <button
             onClick={() => setActiveTab('assignments')}
@@ -117,7 +117,7 @@ function TeacherDashboard() {
             }`}
           >
             <BookOpen className="w-4 h-4 mr-2" />
-            Assignments
+            作业
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
@@ -128,7 +128,7 @@ function TeacherDashboard() {
             }`}
           >
             <BarChart3 className="w-4 h-4 mr-2" />
-            Analytics
+            分析
           </button>
         </div>
 
@@ -136,20 +136,20 @@ function TeacherDashboard() {
         {activeTab === 'submissions' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Student Submissions</h2>
+              <h2 className="text-2xl font-bold">学生提交</h2>
               <span className="text-sm text-gray-600">
-                {submissions.length} total
+                共 {submissions.length} 条
               </span>
             </div>
 
             {loading ? (
               <div className="text-center py-12">
-                <div className="text-gray-500">Loading submissions...</div>
+                <div className="text-gray-500">正在加载提交...</div>
               </div>
             ) : submissions.length === 0 ? (
               <div className="card text-center py-12">
                 <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600">No submissions yet</p>
+                <p className="text-gray-600">暂无提交</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -167,17 +167,17 @@ function TeacherDashboard() {
                           </h3>
                           {submission.is_automated_feedback && (
                             <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                              AI Feedback
+                              AI反馈
                             </span>
                           )}
                           {!submission.is_automated_feedback && (
                             <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                              Manually Reviewed
+                              已人工评阅
                             </span>
                           )}
                         </div>
                         <p className="text-gray-600">
-                          Student: <span className="font-medium">{submission.student_name}</span>
+                          学生：<span className="font-medium">{submission.student_name}</span>
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
                           {new Date(submission.created_at).toLocaleString()}
@@ -185,11 +185,11 @@ function TeacherDashboard() {
                       </div>
                       <div className="text-right">
                         <div className="text-3xl font-bold text-primary-600">
-                          {submission.automated_scores?.pronunciation_score?.toFixed(0) || 'N/A'}%
+                          {submission.automated_scores?.pronunciation_score?.toFixed(0) || '无'}%
                         </div>
                         {submission.teacher_grade && (
                           <div className="text-lg font-medium text-gray-900 mt-1">
-                            Grade: {submission.teacher_grade}
+                            等级：{submission.teacher_grade}
                           </div>
                         )}
                       </div>
@@ -213,15 +213,15 @@ function TeacherDashboard() {
         {activeTab === 'students' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Students</h2>
+              <h2 className="text-2xl font-bold">学生</h2>
               <span className="text-sm text-gray-600">
-                {students.length} total
+                共 {students.length} 人
               </span>
             </div>
 
             {loading ? (
               <div className="text-center py-12">
-                <div className="text-gray-500">Loading students...</div>
+                <div className="text-gray-500">正在加载学生...</div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -242,11 +242,11 @@ function TeacherDashboard() {
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Recordings:</span>
+                        <span className="text-gray-600">录音：</span>
                         <span className="font-medium">{student.total_recordings}</span>
                       </div>
                       <div className="flex justify-between text-sm mt-2">
-                        <span className="text-gray-600">Avg Score:</span>
+                        <span className="text-gray-600">平均分：</span>
                         <span className="font-medium text-primary-600">
                           {student.average_score}%
                         </span>
@@ -262,13 +262,13 @@ function TeacherDashboard() {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && analytics && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Analytics</h2>
+            <h2 className="text-2xl font-bold mb-6">分析</h2>
 
             {/* Overview Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="card bg-gradient-to-br from-blue-50 to-blue-100">
                 <h3 className="text-sm font-medium text-gray-600 mb-2">
-                  Total Recordings
+                  总录音数
                 </h3>
                 <p className="text-4xl font-bold text-gray-900">
                   {analytics.total_recordings}
@@ -276,7 +276,7 @@ function TeacherDashboard() {
               </div>
               <div className="card bg-gradient-to-br from-green-50 to-green-100">
                 <h3 className="text-sm font-medium text-gray-600 mb-2">
-                  Average Score
+                  平均分
                 </h3>
                 <p className="text-4xl font-bold text-gray-900">
                   {analytics.average_score}%
@@ -284,7 +284,7 @@ function TeacherDashboard() {
               </div>
               <div className="card bg-gradient-to-br from-yellow-50 to-yellow-100">
                 <h3 className="text-sm font-medium text-gray-600 mb-2">
-                  Pending Reviews
+                  待评阅
                 </h3>
                 <p className="text-4xl font-bold text-gray-900">
                   {analytics.pending_reviews}
@@ -295,7 +295,7 @@ function TeacherDashboard() {
             {/* Most Practiced Words */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="card">
-                <h3 className="text-lg font-semibold mb-4">Most Practiced Words</h3>
+                <h3 className="text-lg font-semibold mb-4">最常练习的单词</h3>
                 <div className="space-y-3">
                   {analytics.most_practiced_words.map((item, index) => (
                     <div
@@ -303,7 +303,7 @@ function TeacherDashboard() {
                       className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
                     >
                       <span className="font-medium text-gray-900">{item.word}</span>
-                      <span className="text-sm text-gray-600">{item.count} times</span>
+                      <span className="text-sm text-gray-600">{item.count} 次</span>
                     </div>
                   ))}
                 </div>
@@ -311,7 +311,7 @@ function TeacherDashboard() {
 
               {/* Challenging Words */}
               <div className="card">
-                <h3 className="text-lg font-semibold mb-4">Challenging Words</h3>
+                <h3 className="text-lg font-semibold mb-4">困难单词</h3>
                 <div className="space-y-3">
                   {analytics.challenging_words.map((item, index) => (
                     <div
@@ -320,7 +320,7 @@ function TeacherDashboard() {
                     >
                       <span className="font-medium text-gray-900">{item.word}</span>
                       <span className="text-sm text-red-600">
-                        {item.average_score}% avg
+                        平均 {item.average_score}%
                       </span>
                     </div>
                   ))}

@@ -25,7 +25,7 @@ function Login() {
         navigate('/teacher');
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      setError(err.response?.data?.detail || '登录失败，请重试。');
     } finally {
       setLoading(false);
     }
@@ -39,8 +39,8 @@ function Login() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
               <LogIn className="w-8 h-8 text-primary-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-            <p className="text-gray-600 mt-2">Sign in to continue practicing</p>
+            <h1 className="text-3xl font-bold text-gray-900">欢迎回来</h1>
+            <p className="text-gray-600 mt-2">登录以继续练习</p>
           </div>
 
           {error && (
@@ -53,7 +53,7 @@ function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                邮箱
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -70,7 +70,7 @@ function Login() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                密码
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -90,15 +90,15 @@ function Login() {
               disabled={loading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? '正在登录...' : '登录'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              还没有账号？{' '}
               <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-                Sign up
+                注册
               </Link>
             </p>
           </div>

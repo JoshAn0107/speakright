@@ -82,7 +82,7 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
       setIsRecording(true);
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      alert('Could not access microphone. Please grant permission.');
+      alert('无法访问麦克风，请授予权限。');
     }
   };
 
@@ -133,7 +133,7 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
       }
     } catch (error) {
       console.error('Error submitting recording:', error);
-      alert('Failed to submit recording. Please try again.');
+      alert('提交录音失败，请重试。');
     } finally {
       setSubmitting(false);
     }
@@ -160,41 +160,41 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4">
               <span className="text-2xl font-bold text-white">
-                {result.feedback?.grade || 'N/A'}
+                {result.feedback?.grade || '无'}
               </span>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Recording Submitted!
+              录音已提交！
             </h3>
             <p className="text-gray-700">
-              Score: {result.automated_scores?.pronunciation_score?.toFixed(0) || 'N/A'}/100
+              得分：{result.automated_scores?.pronunciation_score?.toFixed(0) || '无'}/100
             </p>
           </div>
         </div>
 
         <div className="card">
-          <h4 className="font-semibold text-lg mb-3">Detailed Scores</h4>
+          <h4 className="font-semibold text-lg mb-3">详细评分</h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-sm text-gray-600">Pronunciation</div>
+              <div className="text-sm text-gray-600">发音</div>
               <div className="text-2xl font-bold text-primary-600">
                 {result.automated_scores?.pronunciation_score?.toFixed(0) || 0}%
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Accuracy</div>
+              <div className="text-sm text-gray-600">准确度</div>
               <div className="text-2xl font-bold text-primary-600">
                 {result.automated_scores?.accuracy_score?.toFixed(0) || 0}%
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Fluency</div>
+              <div className="text-sm text-gray-600">流利度</div>
               <div className="text-2xl font-bold text-primary-600">
                 {result.automated_scores?.fluency_score?.toFixed(0) || 0}%
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Completeness</div>
+              <div className="text-sm text-gray-600">完整度</div>
               <div className="text-2xl font-bold text-primary-600">
                 {result.automated_scores?.completeness_score?.toFixed(0) || 0}%
               </div>
@@ -205,14 +205,14 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
         <div className="card bg-blue-50 border border-blue-200">
           <h4 className="font-semibold text-lg mb-3 flex items-center">
             <span className="mr-2">💬</span>
-            AI Feedback
+            AI反馈
           </h4>
           <p className="text-gray-800 whitespace-pre-line">
-            {result.feedback?.text || 'No feedback available'}
+            {result.feedback?.text || '暂无反馈'}
           </p>
           {result.feedback?.is_automated && (
             <p className="text-xs text-gray-500 mt-3 italic">
-              This feedback was generated automatically. Your teacher may review and provide additional comments.
+              该反馈由系统自动生成。你的老师可能会再进行审核并补充说明。
             </p>
           )}
         </div>
@@ -225,7 +225,7 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
           }}
           className="w-full btn-primary"
         >
-          Practice Another Word
+          练习另一个单词
         </button>
       </div>
     );
@@ -236,20 +236,20 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
       {/* Model Pronunciation */}
       {wordData?.audio_url && (
         <div className="card bg-gray-50">
-          <h4 className="font-semibold mb-3">Model Pronunciation</h4>
+          <h4 className="font-semibold mb-3">标准发音</h4>
           <button
             onClick={playModelAudio}
             className="btn-secondary w-full flex items-center justify-center"
           >
             <Volume2 className="w-5 h-5 mr-2" />
-            Listen to Pronunciation
+            听发音
           </button>
         </div>
       )}
 
       {/* Recording Controls */}
       <div className="card">
-        <h4 className="font-semibold mb-4">Your Recording</h4>
+        <h4 className="font-semibold mb-4">你的录音</h4>
 
         <div className="flex flex-col items-center space-y-4">
           {!isRecording && !audioBlob && (
@@ -281,13 +281,13 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
 
           <div className="text-center">
             {isRecording && (
-              <p className="text-sm text-red-600 font-medium">Recording... Click to stop</p>
+              <p className="text-sm text-red-600 font-medium">正在录音... 点击停止</p>
             )}
             {!isRecording && !audioBlob && (
-              <p className="text-sm text-gray-600">Click to start recording</p>
+              <p className="text-sm text-gray-600">点击开始录音</p>
             )}
             {audioBlob && !isRecording && (
-              <p className="text-sm text-green-600 font-medium">Recording ready! Click to play</p>
+              <p className="text-sm text-green-600 font-medium">录音完成！点击播放</p>
             )}
           </div>
         </div>
@@ -301,7 +301,7 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
               }}
               className="flex-1 btn-secondary"
             >
-              Re-record
+              重新录制
             </button>
             <button
               onClick={submitRecording}
@@ -311,12 +311,12 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
               {submitting ? (
                 <>
                   <Loader className="w-5 h-5 mr-2 animate-spin" />
-                  Submitting...
+                  提交中...
                 </>
               ) : (
                 <>
                   <Upload className="w-5 h-5 mr-2" />
-                  Submit
+                  提交
                 </>
               )}
             </button>
@@ -327,8 +327,7 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
       {isRecording && (
         <div className="card bg-yellow-50 border border-yellow-200">
           <p className="text-sm text-yellow-800">
-            <strong>Tip:</strong> Speak clearly and pronounce the word as accurately as possible.
-            Take your time!
+            <strong>提示：</strong>清晰发音，尽可能准确地读出单词，慢慢来！
           </p>
         </div>
       )}
