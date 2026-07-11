@@ -641,11 +641,20 @@ def get_assignment_progress(
     for assignment_student in assignment.students:
         student = assignment_student.student
 
-        # Count completed words
-        completed_count = db.query(AssignmentSubmission).filter(
+        # submissions with their recording scores for this assignment
+        submissions = db.query(AssignmentSubmission).filter(
             AssignmentSubmission.assignment_id == assignment_id,
             AssignmentSubmission.student_id == student.id
-        ).count()
+        ).all()
+        completed_count = len(submissions)
+
+        scores = []
+        for sub in submissions:
+            if sub.recording and sub.recording.automated_scores:
+                score = sub.recording.automated_scores.get("pronunciation_score")
+                if score is not None:
+                    scores.append(float(score))
+        average_score = round(sum(scores) / len(scores), 1) if scores else None
 
         completion_percentage = (completed_count / total_words * 100) if total_words > 0 else 0
 
@@ -655,6 +664,7 @@ def get_assignment_progress(
             "total_words": total_words,
             "completed_words": completed_count,
             "completion_percentage": round(completion_percentage, 1),
+            "average_score": average_score,
             "assigned_at": assignment_student.assigned_at,
             "completed_at": assignment_student.completed_at
         })

@@ -174,6 +174,9 @@ function AssignmentProgress({ assignment, onBack }) {
                       完成单词数
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      平均分
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       分配日期
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -215,6 +218,21 @@ function AssignmentProgress({ assignment, onBack }) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {studentProgress.completed_words} / {studentProgress.total_words}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {studentProgress.average_score != null ? (
+                          <span className={`text-sm font-bold ${
+                            studentProgress.average_score >= 80
+                              ? 'text-green-600'
+                              : studentProgress.average_score >= 60
+                              ? 'text-yellow-600'
+                              : 'text-red-600'
+                          }`}>
+                            {studentProgress.average_score.toFixed(1)}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(studentProgress.assigned_at).toLocaleDateString()}
