@@ -12,6 +12,82 @@ const assignmentService = {
     return response.data;
   },
 
+  createWordDatabase: async (name, description = null) => {
+    const response = await api.post('/api/assignments/databases', { name, description });
+    return response.data;
+  },
+
+  addWordsToDatabase: async (databaseId, words) => {
+    // words: array of { word_text, definition?, example_sentence?, difficulty_level? }
+    const response = await api.post(`/api/assignments/databases/${databaseId}/words`, { words });
+    return response.data;
+  },
+
+  deleteDatabaseWord: async (databaseId, wordId) => {
+    const response = await api.delete(`/api/assignments/databases/${databaseId}/words/${wordId}`);
+    return response.data;
+  },
+
+  exportDatabaseExcel: async (databaseId, databaseName) => {
+    const response = await api.get(`/api/assignments/databases/${databaseId}/export`, {
+      responseType: 'blob',
+    });
+    const url = URL.createObjectURL(response.data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${databaseName}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  },
+
+  deleteWordDatabase: async (databaseId) => {
+    const response = await api.delete(`/api/assignments/databases/${databaseId}`);
+    return response.data;
+  },
+
+  getTrashedDatabases: async () => {
+    const response = await api.get('/api/assignments/databases/trash');
+    return response.data;
+  },
+
+  restoreDatabase: async (databaseId) => {
+    const response = await api.post(`/api/assignments/databases/${databaseId}/restore`);
+    return response.data;
+  },
+
+  purgeDatabase: async (databaseId) => {
+    const response = await api.delete(`/api/assignments/databases/${databaseId}/purge`);
+    return response.data;
+  },
+
+  emptyTrash: async () => {
+    const response = await api.delete('/api/assignments/databases/trash');
+    return response.data;
+  },
+
+  uploadWordlistFile: async (file, targetName = null, note = null) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (targetName) formData.append('target_name', targetName);
+    if (note) formData.append('note', note);
+    const response = await api.post('/api/assignments/wordlist-uploads', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  getWordlistUploads: async () => {
+    const response = await api.get('/api/assignments/wordlist-uploads');
+    return response.data;
+  },
+
+  deleteWordlistUpload: async (uploadId) => {
+    const response = await api.delete(`/api/assignments/wordlist-uploads/${uploadId}`);
+    return response.data;
+  },
+
   // Teacher - Assignment Management
   createAssignment: async (assignmentData) => {
     const response = await api.post('/api/assignments/teacher/assignments', assignmentData);

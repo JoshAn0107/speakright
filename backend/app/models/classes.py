@@ -12,6 +12,7 @@ class Class(Base):
     teacher_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     class_name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
+    class_code = Column(String(8), unique=True, index=True, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

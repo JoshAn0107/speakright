@@ -1,32 +1,58 @@
-# Docker tar files
-docker-deployment/*.tar
+# --- secrets: never commit ---
+.env
+*.env
+!.env.example
+!backend/.env.example
 
-# Python
+# --- python ---
+venv/
+venv*/
+env/
+ENV/
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-backend/venv/
+.pytest_cache/
 
-# Environment variables
-.env
-*.db
-
-# IDEs
-.vscode/
-.idea/
+# --- node / build ---
+node_modules/
+dist/
+*.log
 *.swp
 *.swo
 
-# OS
+# --- data: user recordings, databases, uploads ---
+*.db
+*.sqlite*
+uploads/
+wordlist_uploads/
+
+# --- ML artifacts (too large for git) ---
+checkpoints/
+*.pth
+*.safetensors
+*.tar.gz
+ml-service/data/
+docker-deployment/*.tar
+
+# --- coursework artifacts (kept locally, not part of the product) ---
+LO*_COMPLETE.md
+LO5_CI_CD_Documentation.md
+LO5_EVIDENCE_SUMMARY.md
+Software Testing Portfolio.tex
+software-testing-grading-scheme.docx
+cw3_explanation.pdf
+nul
+
+# --- IDEs / OS ---
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
+*.bak.*
 
-# Node
-node_modules/
-uploads/
-uploads/
+# --- test artifacts ---
+.coverage
+.hypothesis/
+htmlcov/
+coverage.xml
+README.docker-deployment.md.bak

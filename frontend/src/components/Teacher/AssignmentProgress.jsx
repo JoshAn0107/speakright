@@ -150,14 +150,14 @@ function AssignmentProgress({ assignment, onBack }) {
           </div>
         </div>
 
-        {/* Student Progress Table */}
+        {/* 学生进度 Table */}
         <div className="card">
           <h2 className="text-xl font-semibold mb-4">学生进度</h2>
 
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">正在加载进度...</p>
+              <p className="mt-4 text-gray-600">加载进度中...</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -171,10 +171,10 @@ function AssignmentProgress({ assignment, onBack }) {
                       进度
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      已完成单词
+                      完成单词数
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      布置日期
+                      分配日期
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       状态
@@ -238,7 +238,7 @@ function AssignmentProgress({ assignment, onBack }) {
                           className="flex items-center text-primary-600 hover:text-primary-700 font-medium"
                         >
                           <Eye className="w-4 h-4 mr-1" />
-                          查看并评阅
+                          查看与点评
                           <ChevronRight className="w-4 h-4 ml-1" />
                         </button>
                       </td>
@@ -342,14 +342,14 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {studentInfo?.student_name}
               </h1>
-              <p className="text-gray-600 mb-2">作业：{assignment.title}</p>
+              <p className="text-gray-600 mb-2">作业： {assignment.title}</p>
               <div className="flex items-center gap-4 text-sm text-gray-600">
                 <span>
-                  进度：<strong>{progress.completed_words}/{progress.total_words} 个单词</strong>
+                  进度： <strong>{progress.completed_words}/{progress.total_words} 个单词</strong>
                 </span>
                 <span>•</span>
                 <span>
-                  已完成 <strong>{progress.completion_percentage.toFixed(0)}%</strong>
+                  <strong>{progress.completion_percentage.toFixed(0)}%</strong> 已完成
                 </span>
               </div>
             </div>
@@ -395,7 +395,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                         </div>
                         {word.score && (
                           <p className="text-sm text-gray-600 mt-1">
-                            得分：<span className="font-medium">{word.score}</span>
+                            得分： <span className="font-medium">{word.score}</span>
                           </p>
                         )}
                       </div>
@@ -422,13 +422,13 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
             {selectedWord ? (
               <>
                 <h2 className="text-xl font-semibold mb-4">
-                  评阅：{selectedWord.word_text}
+                  点评： {selectedWord.word_text}
                 </h2>
 
                 {!selectedWord.submitted ? (
                   <div className="text-center py-12 text-gray-500">
                     <Clock className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <p>学生尚未录制此单词</p>
+                    <p>该学生尚未录制此单词</p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmitFeedback} className="space-y-6">
@@ -448,30 +448,30 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                     {/* Automated Scores */}
                     {getSubmissionForWord(selectedWord.word_text)?.automated_scores && (
                       <div className="p-4 bg-blue-50 rounded-lg">
-                        <h3 className="font-semibold mb-2">AI评估</h3>
+                        <h3 className="font-semibold mb-2">AI 评估</h3>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
                             <span className="text-gray-600">发音：</span>
                             <span className="ml-2 font-semibold">
-                              {getSubmissionForWord(selectedWord.word_text)?.automated_scores?.pronunciation_score || '无'}
+                              {getSubmissionForWord(selectedWord.word_text)?.automated_scores?.pronunciation_score || '暂无'}
                             </span>
                           </div>
                           <div>
                             <span className="text-gray-600">准确度：</span>
                             <span className="ml-2 font-semibold">
-                              {getSubmissionForWord(selectedWord.word_text)?.automated_scores?.accuracy_score || '无'}
+                              {getSubmissionForWord(selectedWord.word_text)?.automated_scores?.accuracy_score || '暂无'}
                             </span>
                           </div>
                           <div>
                             <span className="text-gray-600">流利度：</span>
                             <span className="ml-2 font-semibold">
-                              {getSubmissionForWord(selectedWord.word_text)?.automated_scores?.fluency_score || '无'}
+                              {getSubmissionForWord(selectedWord.word_text)?.automated_scores?.fluency_score || '暂无'}
                             </span>
                           </div>
                           <div>
                             <span className="text-gray-600">完整度：</span>
                             <span className="ml-2 font-semibold">
-                              {getSubmissionForWord(selectedWord.word_text)?.automated_scores?.completeness_score || '无'}
+                              {getSubmissionForWord(selectedWord.word_text)?.automated_scores?.completeness_score || '暂无'}
                             </span>
                           </div>
                         </div>
@@ -493,14 +493,14 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                         onChange={(e) => setFeedbackText(e.target.value)}
                         rows="4"
                         className="input-field"
-                        placeholder="给学生的反馈..."
+                        placeholder="给学生提供反馈..."
                         required
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        等级
+                        评分
                       </label>
                       <select
                         value={grade}
@@ -508,7 +508,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                         className="input-field"
                         required
                       >
-                        <option value="">选择等级</option>
+                        <option value="">选择评分</option>
                         {gradeOptions.map((g) => (
                           <option key={g} value={g}>{g}</option>
                         ))}
@@ -548,7 +548,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
             ) : (
               <div className="text-center py-12 text-gray-500">
                 <Eye className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>选择一个单词进行评阅并填写反馈</p>
+                <p>请选择一个单词进行点评并提供反馈</p>
               </div>
             )}
           </div>

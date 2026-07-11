@@ -1,13 +1,19 @@
-import { useState, useRef } from 'react';
-import { Mic, Square, Play, Upload, Volume2, Loader } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Mic, Square, Play, Upload, Volume2, Loader, CheckCircle } from 'lucide-react';
 import studentService from '../../services/studentService';
 
-function RecordingInterface({ word, wordData, onRecordingComplete }) {
+function RecordingInterface({ word, wordData, onRecordingComplete, batchMode = false, onAudioSaved = null }) {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, set提交ting] = useState(false);
   const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    setAudioBlob(null);
+    setAudioUrl(null);
+    setResult(null);
+  }, [word]);
 
   const audioContextRef = useRef(null);
   const streamRef = useRef(null);
@@ -124,7 +130,7 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
   const submitRecording = async () => {
     if (!audioBlob) return;
 
-    setSubmitting(true);
+    set提交ting(true);
     try {
       const response = await studentService.submitRecording(word, audioBlob);
       setResult(response);
@@ -135,7 +141,7 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
       console.error('Error submitting recording:', error);
       alert('提交录音失败，请重试。');
     } finally {
-      setSubmitting(false);
+      set提交ting(false);
     }
   };
 
@@ -160,14 +166,14 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4">
               <span className="text-2xl font-bold text-white">
-                {result.feedback?.grade || '无'}
+                {result.feedback?.grade || '暂无'}
               </span>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               录音已提交！
             </h3>
             <p className="text-gray-700">
-              得分：{result.automated_scores?.pronunciation_score?.toFixed(0) || '无'}/100
+              得分： {result.automated_scores?.pronunciation_score?.toFixed(0) || '暂无'}/100
             </p>
           </div>
         </div>
@@ -205,14 +211,14 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
         <div className="card bg-blue-50 border border-blue-200">
           <h4 className="font-semibold text-lg mb-3 flex items-center">
             <span className="mr-2">💬</span>
-            AI反馈
+            AI 反馈
           </h4>
           <p className="text-gray-800 whitespace-pre-line">
             {result.feedback?.text || '暂无反馈'}
           </p>
           {result.feedback?.is_automated && (
             <p className="text-xs text-gray-500 mt-3 italic">
-              该反馈由系统自动生成。你的老师可能会再进行审核并补充说明。
+              此反馈由系统自动生成，老师可能会进一步审核并补充意见。
             </p>
           )}
         </div>
@@ -225,7 +231,7 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
           }}
           className="w-full btn-primary"
         >
-          练习另一个单词
+          练习其他单词
         </button>
       </div>
     );
@@ -233,16 +239,16 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
 
   return (
     <div className="space-y-6">
-      {/* Model Pronunciation */}
+      {/* 示范发音 */}
       {wordData?.audio_url && (
         <div className="card bg-gray-50">
-          <h4 className="font-semibold mb-3">标准发音</h4>
+          <h4 className="font-semibold mb-3">示范发音</h4>
           <button
             onClick={playModelAudio}
             className="btn-secondary w-full flex items-center justify-center"
           >
             <Volume2 className="w-5 h-5 mr-2" />
-            听发音
+            收听示范发音
           </button>
         </div>
       )}
@@ -281,13 +287,13 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
 
           <div className="text-center">
             {isRecording && (
-              <p className="text-sm text-red-600 font-medium">正在录音... 点击停止</p>
+              <p className="text-sm text-red-600 font-medium">正在录音...点击停止</p>
             )}
             {!isRecording && !audioBlob && (
               <p className="text-sm text-gray-600">点击开始录音</p>
             )}
             {audioBlob && !isRecording && (
-              <p className="text-sm text-green-600 font-medium">录音完成！点击播放</p>
+              <p className="text-sm text-green-600 font-medium">录音就绪！点击播放</p>
             )}
           </div>
         </div>
@@ -301,10 +307,18 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
               }}
               className="flex-1 btn-secondary"
             >
-              重新录制
+              重新录音
             </button>
             <button
-              onClick={submitRecording}
+              onClick={() => {
+                if (batchMode && onAudioSaved) {
+                  onAudioSaved(audioBlob);
+                  setAudioBlob(null);
+                  setAudioUrl(null);
+                } else {
+                  submitRecording();
+                }
+              }}
               disabled={submitting}
               className="flex-1 btn-primary disabled:opacity-50 flex items-center justify-center"
             >
@@ -312,6 +326,11 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
                 <>
                   <Loader className="w-5 h-5 mr-2 animate-spin" />
                   提交中...
+                </>
+              ) : batchMode ? (
+                <>
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  保存，下一个
                 </>
               ) : (
                 <>
@@ -327,7 +346,8 @@ function RecordingInterface({ word, wordData, onRecordingComplete }) {
       {isRecording && (
         <div className="card bg-yellow-50 border border-yellow-200">
           <p className="text-sm text-yellow-800">
-            <strong>提示：</strong>清晰发音，尽可能准确地读出单词，慢慢来！
+            <strong>提示：</strong> 请清晰发音，尽量准确读出单词。
+            慢慢来！
           </p>
         </div>
       )}

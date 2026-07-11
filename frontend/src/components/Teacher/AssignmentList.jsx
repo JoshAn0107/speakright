@@ -36,13 +36,13 @@ function AssignmentList({ onBackToDashboard }) {
   };
 
   const handleDeleteAssignment = async (assignmentId) => {
-    if (!confirm('确定要删除这份作业吗？此操作无法撤销。')) {
+    if (!confirm('确定要删除此作业吗？此操作无法撤销。')) {
       return;
     }
 
     try {
       await assignmentService.deleteAssignment(assignmentId);
-      alert('作业已删除');
+      alert('作业删除成功');
       loadAssignments();
     } catch (error) {
       console.error('Error deleting assignment:', error);
@@ -96,7 +96,7 @@ function AssignmentList({ onBackToDashboard }) {
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors text-sm"
               >
                 <Home className="w-4 h-4 mr-1" />
-                仪表盘
+                返回仪表盘
               </button>
             )}
           </div>
@@ -114,7 +114,7 @@ function AssignmentList({ onBackToDashboard }) {
             <div className="flex items-center text-red-800">
               <AlertCircle className="w-5 h-5 mr-2" />
               <div>
-                <p className="font-medium">加载作业失败</p>
+                <p className="font-medium">加载作业出错</p>
                 <p className="text-sm mt-1">{error}</p>
               </div>
             </div>
@@ -130,12 +130,12 @@ function AssignmentList({ onBackToDashboard }) {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">正在加载作业...</p>
+            <p className="mt-4 text-gray-600">加载作业中...</p>
           </div>
         ) : assignments.length === 0 && !error ? (
           <div className="card text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">目前没有作业</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">暂无作业</h3>
             <p className="text-gray-600 mb-6">
               创建你的第一个单词作业，帮助学生练习发音
             </p>
@@ -144,14 +144,14 @@ function AssignmentList({ onBackToDashboard }) {
               className="btn-primary inline-flex items-center"
             >
               <Plus className="w-5 h-5 mr-2" />
-              创建首个作业
+              创建第一个作业
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6">
             {assignments.map((assignment) => {
               const dueDate = assignment.due_date ? new Date(assignment.due_date) : null;
-              const isOverdue = dueDate && dueDate < new Date();
+              const is逾期 = dueDate && dueDate < new Date();
 
               return (
                 <div key={assignment.id} className="card hover:shadow-lg transition-shadow">
@@ -161,10 +161,10 @@ function AssignmentList({ onBackToDashboard }) {
                         <h3 className="text-xl font-semibold text-gray-900">
                           {assignment.title}
                         </h3>
-                        {isOverdue && (
+                        {is逾期 && (
                           <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full flex items-center">
                             <AlertCircle className="w-3 h-3 mr-1" />
-                            已逾期
+                            逾期
                           </span>
                         )}
                       </div>
@@ -191,13 +191,13 @@ function AssignmentList({ onBackToDashboard }) {
                         {dueDate && (
                           <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-1" />
-                            截止：{dueDate.toLocaleDateString()}
+                            截止： {dueDate.toLocaleDateString()}
                           </div>
                         )}
                       </div>
 
                       <div className="mt-4 text-xs text-gray-500">
-                        创建日期：{new Date(assignment.created_at).toLocaleDateString()}
+                        创建于： {new Date(assignment.created_at).toLocaleDateString()}
                       </div>
                     </div>
 
@@ -223,7 +223,7 @@ function AssignmentList({ onBackToDashboard }) {
                   {/* Word Preview */}
                   {assignment.words && assignment.words.length > 0 && (
                     <div className="mt-4 pt-4 border-t">
-                      <p className="text-sm text-gray-600 mb-2">本次作业的单词：</p>
+                      <p className="text-sm text-gray-600 mb-2">本作业包含单词：</p>
                       <div className="flex flex-wrap gap-2">
                         {assignment.words.slice(0, 10).map((word) => (
                           <span
@@ -235,7 +235,7 @@ function AssignmentList({ onBackToDashboard }) {
                         ))}
                         {assignment.words.length > 10 && (
                           <span className="px-2 py-1 bg-gray-200 text-gray-600 text-sm rounded">
-                            还有 +{assignment.words.length - 10} 个
+                            +{assignment.words.length - 10} 更多
                           </span>
                         )}
                       </div>

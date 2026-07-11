@@ -61,7 +61,7 @@ def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(secu
     if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
+            detail="未认证",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -71,7 +71,7 @@ def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(secu
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="无法验证凭据",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -79,7 +79,7 @@ def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(secu
     if user_id_str is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="无法验证凭据",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -88,7 +88,7 @@ def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(secu
     except (ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="无法验证凭据",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

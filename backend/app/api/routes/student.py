@@ -17,6 +17,7 @@ from app.models.progress import StudentProgress
 from app.schemas.recording import RecordingResponse, ProgressResponse
 from app.services.pronunciation_service import pronunciation_service
 from app.services.feedback_service import feedback_service
+from app.services.shadow_service import submit_shadow
 from app.core.config import settings
 
 router = APIRouter()
@@ -39,7 +40,7 @@ async def submit_recording(
     if not audio_file.content_type.startswith('audio/'):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File must be an audio file"
+            detail="文件必须是音频文件"
         )
 
     # Create student-specific directory
@@ -59,7 +60,7 @@ async def submit_recording(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Could not save audio file: {str(e)}"
+            detail=f"无法保存音频文件：{str(e)}"
         )
 
     # Assess pronunciation using Azure Speech Service
@@ -75,7 +76,7 @@ async def submit_recording(
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Pronunciation assessment failed: {str(e)}"
+            detail=f"发音评估失败：{str(e)}"
         )
 
     # Generate automated feedback
@@ -88,7 +89,7 @@ async def submit_recording(
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate feedback: {str(e)}"
+            detail=f"生成反馈失败：{str(e)}"
         )
 
     # Create recording entry with automated feedback
@@ -156,11 +157,17 @@ async def submit_recording(
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(e)}"
+            detail=f"数据库错误：{str(e)}"
         )
 
+    # shadow-score with the self-hosted ML model (fire-and-forget)
+    try:
+        submit_shadow(recording.id, word_text, str(file_path), assessment_result)
+    except Exception as e:
+        print(f"Shadow submit failed (non-fatal): {e}")
+
     return {
-        "message": "Recording submitted and automatically reviewed",
+        "message": "录音已提交并自动评审",
         "recording_id": recording.id,
         "automated_scores": assessment_result,
         "feedback": {
@@ -185,7 +192,7 @@ def get_my_recordings(
         if status not in ["pending", "reviewed"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Status must be 'pending' or 'reviewed'"
+                detail="状态必须为 'pending' 或 'reviewed'"
             )
         query = query.filter(Recording.status == status)
 
@@ -266,3 +273,77 @@ def get_my_progress(
         streak_count=streak,
         recent_recordings=recent_recordings_data
     )
+
+
+@router.post("/classes/join", response_model=dict)
+def join_class(
+    class_code: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_student)
+):
+    """Join a class using the class code from the teacher"""
+
+    from app.models.classes import Class, ClassEnrollment
+
+    code = class_code.strip().upper()
+    class_obj = db.query(Class).filter(Class.class_code == code).first()
+
+    if not class_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="班级码无效，请检查后重试"
+        )
+
+    existing = db.query(ClassEnrollment).filter(
+        ClassEnrollment.class_id == class_obj.id,
+        ClassEnrollment.student_id == current_user.id
+    ).first()
+
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="你已加入该班级"
+        )
+
+    enrollment = ClassEnrollment(
+        class_id=class_obj.id,
+        student_id=current_user.id
+    )
+    db.add(enrollment)
+    db.commit()
+
+    return {
+        "message": "成功加入班级",
+        "class_id": class_obj.id,
+        "class_name": class_obj.class_name
+    }
+
+
+@router.get("/classes", response_model=List[dict])
+def get_my_classes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_student)
+):
+    """Get classes the student has joined"""
+
+    from app.models.classes import Class, ClassEnrollment
+
+    enrollments = db.query(ClassEnrollment).filter(
+        ClassEnrollment.student_id == current_user.id
+    ).all()
+
+    result = []
+    for enrollment in enrollments:
+        class_obj = db.query(Class).filter(Class.id == enrollment.class_id).first()
+        if not class_obj:
+            continue
+        teacher = db.query(User).filter(User.id == class_obj.teacher_id).first()
+        result.append({
+            "id": class_obj.id,
+            "class_name": class_obj.class_name,
+            "description": class_obj.description,
+            "teacher_name": teacher.username if teacher else "Unknown",
+            "enrolled_at": enrollment.enrolled_at
+        })
+
+    return result

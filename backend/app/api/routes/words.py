@@ -25,7 +25,7 @@ async def get_word(word: str, db: Session = Depends(get_db)):
     if not word_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Word not found in dictionary"
+            detail="词典中未找到该单词"
         )
 
     # Check if word is already in our system
@@ -102,7 +102,7 @@ async def get_words_by_topic(topic: str, db: Session = Depends(get_db)):
     if not word_assignments:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No words found for topic: {topic}"
+            detail=f"该主题未找到单词：{topic}"
         )
 
     # Fetch details for all words
@@ -134,7 +134,7 @@ async def assign_word_to_system(
     if not word_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Word not found in dictionary"
+            detail="词典中未找到该单词"
         )
 
     # Check if already in system
@@ -146,7 +146,7 @@ async def assign_word_to_system(
         # Update metadata
         existing.difficulty_level = word.difficulty_level
         existing.topic_tags = word.topic_tags
-        message = "Word updated in system"
+        message = "系统已更新单词"
     else:
         # Create new assignment
         word_assignment = WordAssignment(
@@ -156,7 +156,7 @@ async def assign_word_to_system(
             created_by=current_user.id
         )
         db.add(word_assignment)
-        message = "Word added to system"
+        message = "单词已添加到系统"
 
     db.commit()
 
@@ -175,7 +175,7 @@ async def search_word(query: str):
     if not word_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Word not found"
+            detail="未找到单词"
         )
     return word_data
 

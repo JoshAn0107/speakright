@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, TrendingUp, Award, Flame, BookOpen } from 'lucide-react';
+import { Search, TrendingUp, Award, Flame, BookOpen, GraduationCap } from 'lucide-react';
 import Navbar from '../Common/Navbar';
 import RecordingInterface from './RecordingInterface';
 import AssignmentList from './AssignmentList';
@@ -14,17 +14,46 @@ function StudentDashboard() {
   const [error, setError] = useState('');
   const [progress, setProgress] = useState(null);
   const [recentRecordings, setRecentRecordings] = useState([]);
-  const difficultyLabelMap = {
-    beginner: '入门',
-    intermediate: '中级',
-    advanced: '高级',
-  };
+  const [myClasses, setMyClasses] = useState([]);
+  const [joinCode, setJoinCode] = useState('');
+  const [joining, setJoining] = useState(false);
+  const [joinMessage, setJoinMessage] = useState(null);
 
   useEffect(() => {
     loadDailyWord();
     loadProgress();
     loadRecentRecordings();
+    loadMyClasses();
   }, []);
+
+  const loadMyClasses = async () => {
+    try {
+      const data = await studentService.getMyClasses();
+      setMyClasses(data);
+    } catch (error) {
+      console.error('Error loading classes:', error);
+    }
+  };
+
+  const handleJoinClass = async (e) => {
+    e.preventDefault();
+    if (!joinCode.trim()) return;
+    setJoining(true);
+    setJoinMessage(null);
+    try {
+      const result = await studentService.joinClass(joinCode.trim());
+      setJoinMessage({ type: 'success', text: `${result.message}：${result.class_name}` });
+      setJoinCode('');
+      await loadMyClasses();
+    } catch (error) {
+      setJoinMessage({
+        type: 'error',
+        text: error.response?.data?.detail || '加入班级失败，请重试',
+      });
+    } finally {
+      setJoining(false);
+    }
+  };
 
   const loadDailyWord = async () => {
     try {
@@ -66,7 +95,7 @@ function StudentDashboard() {
       const data = await wordService.getWord(word);
       setWordData(data);
     } catch (err) {
-      setError('未找到该单词，请尝试其他单词。');
+      setError('未找到单词，请尝试其他单词。');
     } finally {
       setLoading(false);
     }
@@ -77,7 +106,7 @@ function StudentDashboard() {
     loadRecentRecordings();
   };
 
-  // Render Assignments tab as full component
+  // Render 作业 tab as full component
   if (activeTab === 'assignments') {
     return <AssignmentList onBackToDashboard={() => setActiveTab('practice')} />;
   }
@@ -124,9 +153,9 @@ function StudentDashboard() {
 
         {activeTab === 'practice' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left: Word Practice */}
+            {/* Left: Word 练习 */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Search Word */}
+              {/* 搜索 Word */}
               <div className="card">
                 <h2 className="text-xl font-bold mb-4">练习单词</h2>
                 <form onSubmit={searchWord} className="flex gap-2">
@@ -167,7 +196,7 @@ function StudentDashboard() {
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                          {difficultyLabelMap[wordData.difficulty_level] || wordData.difficulty_level}
+                      {wordData.difficulty_level}
                     </span>
                   )}
 
@@ -211,7 +240,7 @@ function StudentDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-600">已练习单词</span>
+                        <span className="text-sm text-gray-600">练习单词数</span>
                       </div>
                       <span className="text-2xl font-bold text-gray-900">
                         {progress.words_practiced}
@@ -239,6 +268,61 @@ function StudentDashboard() {
                 </div>
               )}
 
+              {/* My Classes */}
+              <div className="card">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <GraduationCap className="w-5 h-5 mr-2 text-primary-600" />
+                  我的班级
+                </h3>
+                {myClasses.length > 0 ? (
+                  <div className="space-y-2 mb-4">
+                    {myClasses.map((classItem) => (
+                      <div
+                        key={classItem.id}
+                        className="p-3 bg-gray-50 rounded-lg border border-gray-200"
+                      >
+                        <div className="font-medium text-gray-900">
+                          {classItem.class_name}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          老师：{classItem.teacher_name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 mb-4">
+                    还没有加入班级，向老师索要班级码
+                  </p>
+                )}
+                <form onSubmit={handleJoinClass} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    placeholder="输入班级码"
+                    maxLength={6}
+                    className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono tracking-widest uppercase focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                  <button
+                    type="submit"
+                    disabled={joining || !joinCode.trim()}
+                    className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                  >
+                    {joining ? '加入中...' : '加入'}
+                  </button>
+                </form>
+                {joinMessage && (
+                  <p
+                    className={`mt-2 text-sm ${
+                      joinMessage.type === 'success' ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {joinMessage.text}
+                  </p>
+                )}
+              </div>
+
               {/* Recent Recordings */}
               {recentRecordings.length > 0 && (
                 <div className="card">
@@ -265,7 +349,7 @@ function StudentDashboard() {
                               </div>
                               {recording.teacher_grade && (
                                 <div className="text-sm text-gray-600">
-                                  等级：{recording.teacher_grade}
+                                  等级： {recording.teacher_grade}
                                 </div>
                               )}
                             </div>
@@ -290,7 +374,7 @@ function StudentDashboard() {
                   <div className="text-3xl font-bold text-gray-900">
                     {progress.words_practiced}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">已练习单词</div>
+                  <div className="text-sm text-gray-600 mt-1">练习单词数</div>
                 </div>
                 <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
                   <Award className="w-12 h-12 text-green-600 mx-auto mb-3" />
@@ -309,7 +393,7 @@ function StudentDashboard() {
               </div>
             )}
 
-            <h3 className="text-xl font-semibold mb-4">所有录音</h3>
+            <h3 className="text-xl font-semibold mb-4">全部录音</h3>
             <div className="space-y-3">
               {recentRecordings.map((recording) => (
                 <div
@@ -332,7 +416,7 @@ function StudentDashboard() {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary-600">
-                        {recording.automated_scores?.pronunciation_score?.toFixed(0) || '无'}%
+                        {recording.automated_scores?.pronunciation_score?.toFixed(0) || '暂无'}%
                       </div>
                       {recording.teacher_grade && (
                         <div className="text-lg font-medium text-gray-900 mt-1">

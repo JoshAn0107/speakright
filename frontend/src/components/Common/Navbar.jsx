@@ -7,7 +7,7 @@ function Navbar() {
   const user = authService.getCurrentUser();
   const roleLabel = user?.role === 'student' ? '学生' : user?.role === 'teacher' ? '教师' : '';
 
-  const handleLogout = () => {
+  const handle退出登录 = () => {
     authService.logout();
     navigate('/login');
   };
@@ -37,7 +37,7 @@ function Navbar() {
             </div>
 
             <button
-              onClick={handleLogout}
+              onClick={handle退出登录}
               className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <LogOut className="w-4 h-4 mr-2" />

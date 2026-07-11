@@ -66,10 +66,10 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                 {submission.word_text}
               </h1>
               <p className="text-gray-600">
-                学生：<span className="font-medium">{submission.student_name}</span>
+                学生： <span className="font-medium">{submission.student_name}</span>
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                提交时间：{new Date(submission.created_at).toLocaleString()}
+                提交时间： {new Date(submission.created_at).toLocaleString()}
               </p>
             </div>
             <div>
@@ -79,7 +79,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                 </span>
               ) : (
                 <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                  已人工评阅
+                  人工评审
                 </span>
               )}
             </div>
@@ -169,7 +169,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
         {/* Teacher Feedback Form */}
         <form onSubmit={handleSubmit} className="card">
           <h3 className="font-semibold text-lg mb-4">
-            {submission.is_automated_feedback ? '修改或补充反馈' : '你的反馈'}
+            {submission.is_automated_feedback ? '修改或添加反馈' : '你的反馈'}
           </h3>
 
           <div className="space-y-4">
@@ -184,8 +184,8 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                 rows="6"
                 placeholder={
                   submission.is_automated_feedback
-                    ? '添加你对AI反馈的补充意见...'
-                    : '输入你的反馈...'
+                    ? '为AI反馈添加你的个人评语...'
+                    : '输入给学生的反馈...'
                 }
               />
               <p className="mt-1 text-xs text-gray-500">
@@ -205,7 +205,7 @@ function ReviewSubmission({ submission, onBack, onFeedbackSubmitted }) {
                   onChange={(e) => setGrade(e.target.value)}
                   className="input-field"
                 >
-                  <option value="">选择等级...</option>
+                  <option value="">请选择等级...</option>
                   {gradeOptions.map((g) => (
                     <option key={g} value={g}>
                       {g}

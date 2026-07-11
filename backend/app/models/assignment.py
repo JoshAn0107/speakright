@@ -14,7 +14,9 @@ class WordDatabase(Base):
     name = Column(String(100), unique=True, nullable=False, index=True)  # e.g., "IELTS", "Zhongkao", "TOEFL"
     description = Column(Text, nullable=True)
     word_count = Column(Integer, default=0)
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)  # null = built-in database
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    deleted_at = Column(DateTime(timezone=True), nullable=True)  # soft delete: in recycle bin when set
 
     # Relationships
     words = relationship("WordDatabaseWord", back_populates="database", cascade="all, delete-orphan")
@@ -31,6 +33,7 @@ class WordDatabaseWord(Base):
     definition = Column(Text, nullable=True)
     example_sentence = Column(Text, nullable=True)
     difficulty_level = Column(String(50), nullable=True)  # beginner, intermediate, advanced
+    unit = Column(String(50), nullable=True)  # 组别/单元，如 "Unit 1" 
 
     # Relationships
     database = relationship("WordDatabase", back_populates="words")

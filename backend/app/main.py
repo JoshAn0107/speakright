@@ -39,7 +39,7 @@ app.include_router(assignments.router, prefix="/api/assignments", tags=["Assignm
 def root():
     """Root endpoint"""
     return {
-        "message": "Welcome to Pronunciation Practice Portal API",
+        "message": "欢迎使用发音练习平台API",
         "version": settings.APP_VERSION,
         "docs": "/docs"
     }

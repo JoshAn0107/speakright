@@ -16,6 +16,7 @@ class WordDatabaseCreate(WordDatabaseBase):
 class WordDatabaseResponse(WordDatabaseBase):
     id: int
     word_count: int
+    created_by: Optional[int] = None
     created_at: datetime
 
     class Config:
@@ -27,10 +28,15 @@ class WordDatabaseWordBase(BaseModel):
     definition: Optional[str] = None
     example_sentence: Optional[str] = None
     difficulty_level: Optional[str] = None
+    unit: Optional[str] = None
 
 
 class WordDatabaseWordCreate(WordDatabaseWordBase):
     database_id: int
+
+
+class WordDatabaseWordsBulkCreate(BaseModel):
+    words: List[WordDatabaseWordBase]
 
 
 class WordDatabaseWordResponse(WordDatabaseWordBase):

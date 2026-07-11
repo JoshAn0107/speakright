@@ -52,7 +52,7 @@ class FeedbackService:
         """
         if not assessment_result or 'pronunciation_score' not in assessment_result:
             return {
-                "feedback_text": "Unable to assess pronunciation. Please try recording again.",
+                "feedback_text": "无法评估发音，请重新录音。",
                 "grade": "N/A",
                 "is_automated": True
             }
@@ -68,44 +68,69 @@ class FeedbackService:
         # Generate detailed feedback
         feedback_parts = []
 
+        # Prosody: point out stress/intonation problems explicitly
+        prosody_score = assessment_result.get('prosody_score')
+
+        # Recognized text mismatch: the strongest signal that the wrong word was read
+        if assessment_result.get('text_match') is False:
+            recognized = (assessment_result.get('heard_text') or assessment_result.get('recognized_text') or '').strip().rstrip('.')
+            if recognized:
+                feedback_parts.append(
+                    f"⚠️ 系统听到的更像“{recognized}”，而不是“{word_text}”。请听示范发音后重读。"
+                )
+            else:
+                feedback_parts.append(f"⚠️ 系统没有听清你读的是不是“{word_text}”，请重读。")
+        elif (assessment_result.get('stress_check') or {}).get('match') is False:
+            sc = assessment_result['stress_check']
+            syllables = sc.get('syllables') or []
+            exp_i, got_i = sc.get('expected_syllable'), sc.get('predicted_syllable')
+            exp_name = f"“{syllables[exp_i-1]}”" if syllables and exp_i and exp_i <= len(syllables) else ""
+            feedback_parts.append(
+                f"⚠️ 重音位置不对：“{word_text}”应该重读第{exp_i}个音节{exp_name}，你重读的是第{got_i}个。听示范发音再试一次。"
+            )
+        elif prosody_score is not None and prosody_score < 70:
+            feedback_parts.append(
+                f"⚠️ 重音或语调不太对（韵律 {prosody_score:.0f} 分）。听一遍示范发音，注意重音落在哪个音节上。"
+            )
+
         # Overall performance
         if pronunciation_score >= FeedbackService.EXCELLENT_THRESHOLD:
-            feedback_parts.append(f"Excellent pronunciation of '{word_text}'! 🌟")
+            feedback_parts.append(f"“{word_text}”发音非常棒！🌟")
         elif pronunciation_score >= FeedbackService.GREAT_THRESHOLD:
-            feedback_parts.append(f"Great job on '{word_text}'! You're doing very well.")
+            feedback_parts.append(f"“{word_text}”做得很好！你表现很出色。")
         elif pronunciation_score >= FeedbackService.GOOD_THRESHOLD:
-            feedback_parts.append(f"Good effort on '{word_text}'. You're making progress!")
+            feedback_parts.append(f"“{word_text}”努力不错，你在进步！")
         elif pronunciation_score >= FeedbackService.OKAY_THRESHOLD:
-            feedback_parts.append(f"Nice try with '{word_text}'. Keep practicing!")
+            feedback_parts.append(f"“{word_text}”不错的尝试，继续练习！")
         else:
-            feedback_parts.append(f"Keep working on '{word_text}'. Practice makes perfect!")
+            feedback_parts.append(f"继续练习“{word_text}”，熟能生巧！")
 
         # Specific areas to improve
         areas_to_improve = []
         strengths = []
 
         if accuracy_score < FeedbackService.ACCURACY_LOW_THRESHOLD:
-            areas_to_improve.append("pronunciation accuracy")
+            areas_to_improve.append("发音准确度")
         elif accuracy_score >= FeedbackService.ACCURACY_HIGH_THRESHOLD:
-            strengths.append("accurate pronunciation")
+            strengths.append("发音准确")
 
         if fluency_score < FeedbackService.FLUENCY_LOW_THRESHOLD:
-            areas_to_improve.append("fluency and rhythm")
+            areas_to_improve.append("流利度与节奏")
         elif fluency_score >= FeedbackService.FLUENCY_HIGH_THRESHOLD:
-            strengths.append("smooth fluency")
+            strengths.append("流畅度")
 
         if completeness_score < FeedbackService.COMPLETENESS_LOW_THRESHOLD:
-            areas_to_improve.append("completing the full word clearly")
+            areas_to_improve.append("清晰完整地读出单词")
         elif completeness_score >= FeedbackService.COMPLETENESS_HIGH_THRESHOLD:
-            strengths.append("clear articulation")
+            strengths.append("清晰发音")
 
         # Add strengths
         if strengths:
-            feedback_parts.append(f"Strengths: {', '.join(strengths)}.")
+            feedback_parts.append(f"优势：{', '.join(strengths)}。")
 
         # Add areas to improve
         if areas_to_improve:
-            feedback_parts.append(f"Focus on: {', '.join(areas_to_improve)}.")
+            feedback_parts.append(f"需要重点提升：{', '.join(areas_to_improve)}。")
 
         # Phoneme-level feedback
         phoneme_feedback = FeedbackService._analyze_phonemes(assessment_result)
@@ -114,11 +139,11 @@ class FeedbackService:
 
         # Encouragement and next steps
         if pronunciation_score < FeedbackService.GOOD_THRESHOLD:
-            feedback_parts.append("💡 Tip: Listen to the model pronunciation and try to match the sounds carefully.")
+            feedback_parts.append("💡 提示：听示范发音，尽量准确模仿每个音。")
         elif pronunciation_score < FeedbackService.ACCURACY_HIGH_THRESHOLD:
-            feedback_parts.append("💡 Tip: You're close! Pay attention to the stress and rhythm of the word.")
+            feedback_parts.append("💡 提示：你很接近了！注意单词的重音和节奏。")
         else:
-            feedback_parts.append("Keep up the excellent work!")
+            feedback_parts.append("继续保持优秀表现！")
 
         feedback_text = " ".join(feedback_parts)
 
@@ -178,7 +203,7 @@ class FeedbackService:
             # Limit to keep feedback concise
             problem_phonemes = problem_phonemes[:FeedbackService.MAX_PHONEME_FEEDBACK_COUNT]
             phoneme_list = ', '.join([f"/{p}/" for p in problem_phonemes])
-            return f"Pay special attention to these sounds: {phoneme_list}."
+            return f"请特别注意这些音素：{phoneme_list}。"
 
         return None
 
@@ -200,7 +225,7 @@ class FeedbackService:
         if not teacher_notes or teacher_notes.strip() == "":
             return automated_feedback
 
-        return f"{automated_feedback}\n\n👨‍🏫 Teacher's Note: {teacher_notes}"
+        return f"{automated_feedback}\n\n👨‍🏫 老师备注：{teacher_notes}"
 
 
 # Singleton instance

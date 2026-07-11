@@ -8,7 +8,7 @@ function Register() {
     username: '',
     email: '',
     password: '',
-    confirmPassword: '',
+    confirm密码: '',
     role: 'student',
   });
   const [error, setError] = useState('');
@@ -27,8 +27,8 @@ function Register() {
     setError('');
 
     // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('两次输入的密码不一致');
+    if (formData.password !== formData.confirm密码) {
+      setError('两次密码不一致');
       return;
     }
 
@@ -87,7 +87,7 @@ function Register() {
                   value={formData.username}
                   onChange={handleChange}
                   className="input-field pl-10"
-                  placeholder="johndoe"
+                  placeholder="zhangsan"
                   required
                 />
               </div>
@@ -105,7 +105,7 @@ function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   className="input-field pl-10"
-                  placeholder="your@email.com"
+                  placeholder="你的邮箱@example.com"
                   required
                 />
               </div>
@@ -131,14 +131,14 @@ function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                确认密码
+                Confirm 密码
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
+                  name="confirm密码"
+                  value={formData.confirm密码}
                   onChange={handleChange}
                   className="input-field pl-10"
                   placeholder="••••••••"
@@ -183,7 +183,7 @@ function Register() {
                     className="sr-only"
                   />
                   <div className="font-medium">教师</div>
-                  <div className="text-xs text-gray-500 mt-1">批改与指导</div>
+                  <div className="text-xs text-gray-500 mt-1">点评与指导</div>
                 </label>
               </div>
             </div>

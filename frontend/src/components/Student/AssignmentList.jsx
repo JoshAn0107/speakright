@@ -71,24 +71,24 @@ function AssignmentList({ onBackToDashboard }) {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">正在加载作业...</p>
+            <p className="mt-4 text-gray-600">加载作业中...</p>
           </div>
         ) : assignments.length === 0 ? (
           <div className="card text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">目前没有作业</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">暂无作业</h3>
             <p className="text-gray-600">
               你的老师还没有布置单词练习作业。
             </p>
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Overdue Assignments */}
+            {/* 逾期 Assignments */}
             {overdueAssignments.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold text-red-700 mb-4 flex items-center">
                   <AlertCircle className="w-5 h-5 mr-2" />
-                  已逾期（{overdueAssignments.length}）
+                  逾期 ({overdueAssignments.length})
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {overdueAssignments.map((assignment) => (
@@ -103,12 +103,12 @@ function AssignmentList({ onBackToDashboard }) {
               </div>
             )}
 
-            {/* Active Assignments */}
+            {/* 进行中 Assignments */}
             {activeAssignments.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                   <Clock className="w-5 h-5 mr-2" />
-                  进行中（{activeAssignments.length}）
+                  进行中 ({activeAssignments.length})
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {activeAssignments.map((assignment) => (
@@ -123,12 +123,12 @@ function AssignmentList({ onBackToDashboard }) {
               </div>
             )}
 
-            {/* Completed Assignments */}
+            {/* 已完成 Assignments */}
             {completedAssignments.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold text-green-700 mb-4 flex items-center">
                   <CheckCircle className="w-5 h-5 mr-2" />
-                  已完成（{completedAssignments.length}）
+                  已完成 ({completedAssignments.length})
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {completedAssignments.map((assignment) => (
@@ -168,7 +168,7 @@ function AssignmentCard({ assignment, onStartPractice, variant }) {
             {variant === 'overdue' && (
               <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full flex items-center">
                 <AlertCircle className="w-3 h-3 mr-1" />
-                已逾期
+                逾期
               </span>
             )}
             {variant === 'completed' && (
@@ -185,7 +185,7 @@ function AssignmentCard({ assignment, onStartPractice, variant }) {
 
           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
             {assignment.teacher_name && (
-              <div>教师：<span className="font-medium">{assignment.teacher_name}</span></div>
+              <div>教师： <span className="font-medium">{assignment.teacher_name}</span></div>
             )}
             {assignment.word_database_name && (
               <div className="flex items-center">
@@ -200,7 +200,7 @@ function AssignmentCard({ assignment, onStartPractice, variant }) {
             {dueDate && (
               <div className="flex items-center">
                 <Calendar className="w-4 h-4 mr-1" />
-                截止：{dueDate.toLocaleDateString()}
+                截止： {dueDate.toLocaleDateString()}
               </div>
             )}
           </div>

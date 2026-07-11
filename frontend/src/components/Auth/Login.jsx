@@ -4,8 +4,8 @@ import authService from '../../services/authService';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 
 function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, set邮箱] = useState('');
+  const [password, set密码] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -60,9 +60,9 @@ function Login() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => set邮箱(e.target.value)}
                   className="input-field pl-10"
-                  placeholder="your@email.com"
+                  placeholder="你的邮箱@example.com"
                   required
                 />
               </div>
@@ -77,7 +77,7 @@ function Login() {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => set密码(e.target.value)}
                   className="input-field pl-10"
                   placeholder="••••••••"
                   required

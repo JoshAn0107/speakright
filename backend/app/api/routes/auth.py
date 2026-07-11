@@ -18,7 +18,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered"
+            detail="用户名已注册"
         )
 
     # Check if email already exists
@@ -26,14 +26,14 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if existing_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="邮箱已注册"
         )
 
     # Validate role
     if user_data.role not in ["student", "teacher"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Role must be 'student' or 'teacher'"
+            detail="角色必须为 'student' 或 'teacher'"
         )
 
     # Create new user
@@ -69,14 +69,14 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="邮箱或密码错误"
         )
 
     # Verify password
     if not verify_password(credentials.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="邮箱或密码错误"
         )
 
     # Create access token

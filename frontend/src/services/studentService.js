@@ -27,6 +27,18 @@ const studentService = {
     });
     return response.data;
   },
+
+  async joinClass(classCode) {
+    const response = await api.post('/api/student/classes/join', null, {
+      params: { class_code: classCode },
+    });
+    return response.data;
+  },
+
+  async getMyClasses() {
+    const response = await api.get('/api/student/classes');
+    return response.data;
+  },
 };
 
 export default studentService;

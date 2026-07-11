@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
-from typing import List
+from typing import List, Optional
 from datetime import datetime
+from pathlib import Path
+import os
+import re
+import shutil
 
 from app.db.session import get_db
 from app.api.deps import get_current_teacher, get_current_student, get_current_user
@@ -12,8 +16,10 @@ from app.models.assignment import (
     AssignmentStudent, AssignmentSubmission
 )
 from app.models.recording import Recording
+from app.models.wordlist_upload import WordlistUpload
 from app.schemas.assignment import (
     WordDatabaseResponse, WordDatabaseWordResponse,
+    WordDatabaseCreate, WordDatabaseWordsBulkCreate,
     AssignmentCreate, AssignmentUpdate, AssignmentResponse,
     StudentAssignmentResponse, AssignmentProgressResponse,
     AssignmentSubmissionCreate
@@ -29,8 +35,8 @@ def get_word_databases(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get all available word databases"""
-    databases = db.query(WordDatabase).all()
+    """Get all available word databases (excluding those in the recycle bin)"""
+    databases = db.query(WordDatabase).filter(WordDatabase.deleted_at.is_(None)).all()
     return databases
 
 
@@ -45,13 +51,399 @@ def get_database_words(
     """Get words from a specific database"""
     database = db.query(WordDatabase).filter(WordDatabase.id == database_id).first()
     if not database:
-        raise HTTPException(status_code=404, detail="Word database not found")
+        raise HTTPException(status_code=404, detail="未找到词库")
 
     words = db.query(WordDatabaseWord).filter(
         WordDatabaseWord.database_id == database_id
     ).offset(skip).limit(limit).all()
 
     return words
+
+
+def _get_owned_database(database_id: int, db: Session, current_user: User) -> WordDatabase:
+    database = db.query(WordDatabase).filter(WordDatabase.id == database_id).first()
+    if not database:
+        raise HTTPException(status_code=404, detail="未找到词库")
+    if database.created_by != current_user.id:
+        raise HTTPException(status_code=403, detail="只能修改自己创建的词库")
+    return database
+
+
+@router.post("/databases", response_model=WordDatabaseResponse)
+def create_word_database(
+    database_data: WordDatabaseCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Teacher creates a custom word database (e.g. 上海新教材六年级上)"""
+    name = database_data.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="词库名称不能为空")
+
+    existing = db.query(WordDatabase).filter(WordDatabase.name == name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="已存在同名词库")
+
+    database = WordDatabase(
+        name=name,
+        description=database_data.description,
+        word_count=0,
+        created_by=current_user.id
+    )
+    db.add(database)
+    db.commit()
+    db.refresh(database)
+    return database
+
+
+@router.post("/databases/{database_id}/words", response_model=dict)
+def add_words_to_database(
+    database_id: int,
+    payload: WordDatabaseWordsBulkCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Add words (bulk) to a teacher's own word database; duplicates are skipped"""
+    database = _get_owned_database(database_id, db, current_user)
+
+    existing_words = {
+        w.word_text for w in db.query(WordDatabaseWord).filter(
+            WordDatabaseWord.database_id == database_id
+        ).all()
+    }
+
+    added = 0
+    skipped = 0
+    for item in payload.words:
+        word_text = item.word_text.lower().strip()
+        if not word_text or word_text in existing_words:
+            skipped += 1
+            continue
+        db.add(WordDatabaseWord(
+            database_id=database_id,
+            word_text=word_text,
+            definition=item.definition,
+            example_sentence=item.example_sentence,
+            difficulty_level=item.difficulty_level,
+            unit=(item.unit or "").strip() or None
+        ))
+        existing_words.add(word_text)
+        added += 1
+
+    database.word_count = len(existing_words)
+    db.commit()
+
+    return {
+        "message": f"已添加{added}个单词" + (f"，跳过{skipped}个（重复或为空）" if skipped else ""),
+        "added": added,
+        "skipped": skipped,
+        "word_count": database.word_count
+    }
+
+
+@router.delete("/databases/{database_id}/words/{word_id}", response_model=dict)
+def delete_database_word(
+    database_id: int,
+    word_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Remove a word from a teacher's own word database"""
+    database = _get_owned_database(database_id, db, current_user)
+
+    word = db.query(WordDatabaseWord).filter(
+        WordDatabaseWord.id == word_id,
+        WordDatabaseWord.database_id == database_id
+    ).first()
+    if not word:
+        raise HTTPException(status_code=404, detail="未找到单词")
+
+    db.delete(word)
+    database.word_count = max(0, (database.word_count or 1) - 1)
+    db.commit()
+
+    return {"message": "单词已删除", "word_count": database.word_count}
+
+
+@router.get("/databases/trash", response_model=List[dict])
+def get_trashed_databases(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """List the teacher's word databases currently in the recycle bin"""
+    databases = db.query(WordDatabase).filter(
+        WordDatabase.created_by == current_user.id,
+        WordDatabase.deleted_at.isnot(None)
+    ).order_by(WordDatabase.deleted_at.desc()).all()
+
+    return [
+        {
+            "id": d.id,
+            "name": d.name,
+            "description": d.description,
+            "word_count": d.word_count,
+            "deleted_at": d.deleted_at
+        }
+        for d in databases
+    ]
+
+
+@router.delete("/databases/trash", response_model=dict)
+def empty_trash(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Permanently delete all of the teacher's databases in the recycle bin"""
+    trashed = db.query(WordDatabase).filter(
+        WordDatabase.created_by == current_user.id,
+        WordDatabase.deleted_at.isnot(None)
+    ).all()
+
+    for database in trashed:
+        db.query(WordDatabaseWord).filter(
+            WordDatabaseWord.database_id == database.id
+        ).delete()
+        db.delete(database)
+    db.commit()
+
+    return {"message": f"回收站已清空，彻底删除了{len(trashed)}个词库", "purged": len(trashed)}
+
+
+@router.post("/databases/{database_id}/restore", response_model=dict)
+def restore_database(
+    database_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Restore a word database from the recycle bin"""
+    database = _get_owned_database(database_id, db, current_user)
+    if database.deleted_at is None:
+        raise HTTPException(status_code=400, detail="该词库不在回收站中")
+
+    database.deleted_at = None
+    db.commit()
+
+    return {"message": "词库已恢复", "database_id": database_id, "name": database.name}
+
+
+@router.delete("/databases/{database_id}/purge", response_model=dict)
+def purge_database(
+    database_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Permanently delete a database from the recycle bin (cannot be undone)"""
+    database = _get_owned_database(database_id, db, current_user)
+    if database.deleted_at is None:
+        raise HTTPException(status_code=400, detail="请先将词库放入回收站再彻底删除")
+
+    db.query(WordDatabaseWord).filter(
+        WordDatabaseWord.database_id == database_id
+    ).delete()
+    db.delete(database)
+    db.commit()
+
+    return {"message": "词库已彻底删除", "database_id": database_id}
+
+
+@router.delete("/databases/{database_id}", response_model=dict)
+def delete_word_database(
+    database_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Move a teacher's own word database to the recycle bin (soft delete)"""
+    database = _get_owned_database(database_id, db, current_user)
+
+    database.deleted_at = datetime.utcnow()
+    db.commit()
+
+    return {"message": "词库已放入回收站，可在回收站中恢复", "database_id": database_id}
+
+
+@router.get("/databases/{database_id}/export")
+def export_database_excel(
+    database_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Download a word database as an Excel (.xlsx) file"""
+    from io import BytesIO
+    from urllib.parse import quote
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill
+    from openpyxl.utils import get_column_letter
+    from fastapi.responses import StreamingResponse
+
+    database = db.query(WordDatabase).filter(WordDatabase.id == database_id).first()
+    if not database:
+        raise HTTPException(status_code=404, detail="未找到词库")
+
+    words = db.query(WordDatabaseWord).filter(
+        WordDatabaseWord.database_id == database_id
+    ).order_by(WordDatabaseWord.unit, WordDatabaseWord.id).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = database.name[:31]  # Excel sheet name limit
+
+    headers = ["组别", "单词", "释义", "例句"]
+    ws.append(headers)
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    for cell in ws[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+
+    for w in words:
+        ws.append([w.unit or "", w.word_text, w.definition or "", w.example_sentence or ""])
+
+    for col, width in enumerate([12, 24, 50, 50], start=1):
+        ws.column_dimensions[get_column_letter(col)].width = width
+    ws.freeze_panes = "A2"
+
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    filename = f"{database.name}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}"}
+    )
+
+
+# ===== Wordlist Upload (等待适配) Endpoints =====
+
+WORDLIST_UPLOAD_DIR = Path("wordlist_uploads")
+WORDLIST_UPLOAD_DIR.mkdir(exist_ok=True)
+WORDLIST_ALLOWED_EXTENSIONS = {
+    ".txt", ".csv", ".md", ".xlsx", ".xls", ".docx", ".doc",
+    ".pdf", ".png", ".jpg", ".jpeg", ".webp"
+}
+WORDLIST_MAX_SIZE = 20 * 1024 * 1024  # 20MB
+
+
+@router.post("/wordlist-uploads", response_model=dict)
+def upload_wordlist_file(
+    file: UploadFile = File(...),
+    target_name: Optional[str] = Form(None),
+    note: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Teacher uploads a wordlist file (txt/Excel/PDF/photo) to be adapted
+    into a word database by the operator."""
+
+    extension = os.path.splitext(file.filename or "")[1].lower()
+    if extension not in WORDLIST_ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"不支持的文件类型 {extension}，支持：txt、csv、Excel、Word、PDF、图片"
+        )
+
+    upload = WordlistUpload(
+        teacher_id=current_user.id,
+        original_filename=file.filename,
+        stored_path="",
+        target_name=(target_name or "").strip() or None,
+        note=(note or "").strip() or None,
+        status="pending"
+    )
+    db.add(upload)
+    db.flush()  # get id for the filename
+
+    safe_name = re.sub(r"[^\w.\-\u4e00-\u9fff]", "_", file.filename or "file")
+    stored_path = WORDLIST_UPLOAD_DIR / f"{upload.id}_{safe_name}"
+
+    size = 0
+    try:
+        with open(stored_path, "wb") as buffer:
+            while chunk := file.file.read(1024 * 1024):
+                size += len(chunk)
+                if size > WORDLIST_MAX_SIZE:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="文件不能超过20MB"
+                    )
+                buffer.write(chunk)
+    except HTTPException:
+        db.rollback()
+        if stored_path.exists():
+            stored_path.unlink()
+        raise
+    except Exception as e:
+        db.rollback()
+        if stored_path.exists():
+            stored_path.unlink()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"无法保存文件：{str(e)}"
+        )
+
+    upload.stored_path = str(stored_path)
+    db.commit()
+
+    return {
+        "message": "文件已上传，等待适配。适配完成后词库会自动出现在词库列表中。",
+        "upload_id": upload.id,
+        "original_filename": upload.original_filename,
+        "status": upload.status
+    }
+
+
+@router.get("/wordlist-uploads", response_model=List[dict])
+def get_my_wordlist_uploads(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """List the teacher's uploaded wordlist files and their adaptation status"""
+
+    uploads = db.query(WordlistUpload).filter(
+        WordlistUpload.teacher_id == current_user.id
+    ).order_by(WordlistUpload.created_at.desc()).all()
+
+    return [
+        {
+            "id": u.id,
+            "original_filename": u.original_filename,
+            "target_name": u.target_name,
+            "note": u.note,
+            "status": u.status,
+            "result_message": u.result_message,
+            "created_at": u.created_at,
+            "processed_at": u.processed_at
+        }
+        for u in uploads
+    ]
+
+
+@router.delete("/wordlist-uploads/{upload_id}", response_model=dict)
+def delete_wordlist_upload(
+    upload_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Teacher deletes their own upload (only while still pending)"""
+
+    upload = db.query(WordlistUpload).filter(
+        WordlistUpload.id == upload_id,
+        WordlistUpload.teacher_id == current_user.id
+    ).first()
+
+    if not upload:
+        raise HTTPException(status_code=404, detail="未找到上传记录")
+
+    if upload.status != "pending":
+        raise HTTPException(status_code=400, detail="该文件已适配，无法删除记录")
+
+    if upload.stored_path and os.path.exists(upload.stored_path):
+        os.remove(upload.stored_path)
+    db.delete(upload)
+    db.commit()
+
+    return {"message": "上传已删除", "upload_id": upload_id}
 
 
 # ===== Teacher Assignment Endpoints =====
@@ -69,14 +461,14 @@ def create_assignment(
     if word_count < 20 or word_count > 40:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Assignment must contain 20-40 words. Got {word_count} words."
+            detail=f"作业必须包含20-40个单词。当前为{word_count}个。"
         )
 
     # Validate student IDs
     if not assignment_data.student_ids:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="At least one student must be assigned"
+            detail="至少需要分配一名学生"
         )
 
     students = db.query(User).filter(
@@ -87,7 +479,21 @@ def create_assignment(
     if len(students) != len(assignment_data.student_ids):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="One or more invalid student IDs"
+            detail="一个或多个学生ID无效"
+        )
+
+    # Teachers may only assign to students enrolled in their own classes
+    from app.models.classes import Class, ClassEnrollment
+    own_student_ids = {
+        r[0] for r in db.query(ClassEnrollment.student_id).join(
+            Class, ClassEnrollment.class_id == Class.id
+        ).filter(Class.teacher_id == current_user.id).all()
+    }
+    outside = [sid for sid in assignment_data.student_ids if sid not in own_student_ids]
+    if outside:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="只能给自己班级的学生布置作业，请先让学生用班级码加入你的班级"
         )
 
     try:
@@ -125,7 +531,7 @@ def create_assignment(
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error while creating assignment: {str(e)}"
+            detail=f"创建作业时数据库错误：{str(e)}"
         )
 
     # Build response
@@ -158,7 +564,7 @@ def get_teacher_assignment(
     ).first()
 
     if not assignment:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(status_code=404, detail="未找到作业")
 
     return build_assignment_response(assignment, db)
 
@@ -177,7 +583,7 @@ def update_assignment(
     ).first()
 
     if not assignment:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(status_code=404, detail="未找到作业")
 
     # Update fields
     if assignment_data.title is not None:
@@ -206,12 +612,12 @@ def delete_assignment(
     ).first()
 
     if not assignment:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(status_code=404, detail="未找到作业")
 
     db.delete(assignment)
     db.commit()
 
-    return {"message": "Assignment deleted successfully"}
+    return {"message": "作业删除成功"}
 
 
 @router.get("/teacher/assignments/{assignment_id}/progress", response_model=List[dict])
@@ -227,7 +633,7 @@ def get_assignment_progress(
     ).first()
 
     if not assignment:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(status_code=404, detail="未找到作业")
 
     total_words = len(assignment.words)
     student_progress = []
@@ -271,7 +677,7 @@ def get_student_progress_for_teacher(
     ).first()
 
     if not assignment:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(status_code=404, detail="未找到作业")
 
     # Verify student is assigned to this assignment
     assignment_student = db.query(AssignmentStudent).filter(
@@ -280,7 +686,7 @@ def get_student_progress_for_teacher(
     ).first()
 
     if not assignment_student:
-        raise HTTPException(status_code=404, detail="Student not assigned to this assignment")
+        raise HTTPException(status_code=404, detail="学生未被分配到此作业")
 
     # Get all words in assignment
     assignment_words = db.query(AssignmentWord).filter(
@@ -362,7 +768,7 @@ def get_student_assignment(
     ).first()
 
     if not assignment_student:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(status_code=404, detail="未找到作业")
 
     assignment = assignment_student.assignment
     return build_student_assignment_response(assignment, current_user.id, db)
@@ -384,7 +790,7 @@ def submit_assignment_word(
     ).first()
 
     if not assignment_student:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(status_code=404, detail="未找到作业")
 
     # Verify word is in assignment
     assignment_word = db.query(AssignmentWord).filter(
@@ -395,7 +801,7 @@ def submit_assignment_word(
     if not assignment_word:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Word not in assignment"
+            detail="单词不在作业中"
         )
 
     # Verify recording belongs to student
@@ -405,7 +811,7 @@ def submit_assignment_word(
     ).first()
 
     if not recording:
-        raise HTTPException(status_code=404, detail="Recording not found")
+        raise HTTPException(status_code=404, detail="未找到录音")
 
     # Check if submission already exists (allow re-recording)
     existing_submission = db.query(AssignmentSubmission).filter(
@@ -444,7 +850,7 @@ def submit_assignment_word(
     db.commit()
 
     return {
-        "message": "Word submitted successfully",
+        "message": "单词提交成功",
         "completed_words": completed_words,
         "total_words": total_words,
         "completion_percentage": round((completed_words / total_words * 100), 1) if total_words > 0 else 0
@@ -464,7 +870,7 @@ def get_student_assignment_progress(
     ).first()
 
     if not assignment_student:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+        raise HTTPException(status_code=404, detail="未找到作业")
 
     assignment = assignment_student.assignment
 
