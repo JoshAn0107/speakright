@@ -235,42 +235,27 @@ def get_analytics(
     else:
         query = query.filter(Recording.student_id.in_(_teacher_student_ids(db, current_user.id)))
 
-    recordings = query.all()
+    # aggregate everything in SQL — never load full recordings into Python
+    score_expr = func.json_extract(Recording.automated_scores, "$.pronunciation_score")
 
-    # Total recordings
-    total_recordings = len(recordings)
+    total_recordings = query.count()
+    pending_reviews = query.filter(Recording.status == RecordingStatus.PENDING).count()
+    avg_score = query.with_entities(func.avg(score_expr)).scalar() or 0
 
-    # Pending reviews
-    pending_reviews = sum(1 for r in recordings if r.status == RecordingStatus.PENDING)
+    word_rows = query.with_entities(
+        Recording.word_text,
+        func.count(Recording.id),
+        func.avg(score_expr)
+    ).filter(Recording.word_text.isnot(None)).group_by(Recording.word_text).all()
 
-    # Average score across all recordings (computed in Python for JSON compatibility)
-    scores = [
-        r.automated_scores.get("pronunciation_score")
-        for r in recordings
-        if r.automated_scores and "pronunciation_score" in r.automated_scores
-    ]
-    avg_score = sum(scores) / len(scores) if scores else 0
-
-    # Most practiced words
-    word_counter = Counter(r.word_text for r in recordings if r.word_text)
     most_practiced_words = [
-        {"word": word, "count": count}
-        for word, count in word_counter.most_common(10)
+        {"word": w, "count": c}
+        for w, c, _ in sorted(word_rows, key=lambda r: -r[1])[:10]
     ]
-
-    # Words with lowest average scores (challenging words)
-    word_scores = defaultdict(list)
-    for r in recordings:
-        if r.word_text and r.automated_scores and "pronunciation_score" in r.automated_scores:
-            word_scores[r.word_text].append(r.automated_scores["pronunciation_score"])
-
     challenging_words_list = [
-        {"word": word, "average_score": round(sum(scores) / len(scores), 2)}
-        for word, scores in word_scores.items()
-        if scores
+        {"word": w, "average_score": round(float(a), 2)}
+        for w, _, a in sorted((r for r in word_rows if r[2] is not None), key=lambda r: r[2])[:10]
     ]
-    challenging_words_list.sort(key=lambda item: item["average_score"])
-    challenging_words_list = challenging_words_list[:10]
 
     return {
         "total_recordings": total_recordings,

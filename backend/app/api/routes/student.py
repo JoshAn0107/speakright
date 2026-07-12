@@ -250,21 +250,19 @@ def get_my_progress(
         for r in recent_recordings
     ]
 
-    # Calculate streak
+    # Calculate streak with one query: walk the distinct practice dates backwards
+    practice_dates = [
+        r[0] for r in db.query(StudentProgress.date).filter(
+            StudentProgress.student_id == current_user.id,
+            StudentProgress.words_practiced > 0
+        ).order_by(StudentProgress.date.desc()).limit(366).all()
+    ]
     streak = 0
     current_date = today
-    while True:
-        has_practice = db.query(StudentProgress).filter(
-            StudentProgress.student_id == current_user.id,
-            StudentProgress.date == current_date,
-            StudentProgress.words_practiced > 0
-        ).first()
-
-        if has_practice:
-            streak += 1
-            current_date -= timedelta(days=1)
-        else:
-            break
+    date_set = set(practice_dates)
+    while current_date in date_set:
+        streak += 1
+        current_date -= timedelta(days=1)
 
     return ProgressResponse(
         words_practiced=total_words,

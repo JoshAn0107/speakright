@@ -91,9 +91,32 @@ class PronunciationService:
             return self._get_mock_assessment(reference_text)
 
         converted_file_path = None
+        transcribe_future = None
         try:
             # Convert audio to Azure-compatible format
             converted_file_path = self._convert_to_azure_format(audio_file_path)
+
+            # kick off the unbiased second-pass transcription in parallel with
+            # the pronunciation assessment call — halves Azure round-trip time.
+            # It gets its own copy of the wav: two recognizers streaming the
+            # same file handle makes the SDK cancel the session.
+            import shutil as _shutil
+            from concurrent.futures import ThreadPoolExecutor
+            transcribe_copy = converted_file_path + ".stt.wav"
+            _shutil.copyfile(converted_file_path, transcribe_copy)
+
+            def _transcribe_and_cleanup(path):
+                try:
+                    return self._plain_transcribe(path)
+                finally:
+                    try:
+                        os.remove(path)
+                    except OSError:
+                        pass
+
+            _executor = ThreadPoolExecutor(max_workers=1)
+            transcribe_future = _executor.submit(_transcribe_and_cleanup, transcribe_copy)
+            _executor.shutdown(wait=False)
 
             # Configure speech service
             speech_config = speechsdk.SpeechConfig(
@@ -169,7 +192,9 @@ class PronunciationService:
                         for word in pronunciation_result.words
                     ]
                 }
-                assessment["independent_transcript"] = self._plain_transcribe(converted_file_path)
+                assessment["independent_transcript"] = (
+                    transcribe_future.result(timeout=60) if transcribe_future else ""
+                )
 
                 # acoustic word-stress check for single multisyllabic words
                 if len(reference_text.split()) == 1 and syllable_words:
@@ -201,6 +226,12 @@ class PronunciationService:
                 "pronunciation_score": 0
             }
         finally:
+            # make sure the parallel transcription is finished before deleting the file
+            if transcribe_future is not None and not transcribe_future.done():
+                try:
+                    transcribe_future.result(timeout=60)
+                except Exception:
+                    pass
             # Clean up temporary converted file
             if converted_file_path and converted_file_path != audio_file_path:
                 try:
