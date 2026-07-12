@@ -176,29 +176,27 @@ def get_students(
             User.role == UserRole.STUDENT
         ).all()
 
-    # Get statistics for each student
+    # One aggregate query instead of loading every recording per student
+    student_ids_list = [s.id for s in students]
+    stats = {}
+    if student_ids_list:
+        rows = db.query(
+            Recording.student_id,
+            func.count(Recording.id),
+            func.avg(func.json_extract(Recording.automated_scores, "$.pronunciation_score"))
+        ).filter(
+            Recording.student_id.in_(student_ids_list)
+        ).group_by(Recording.student_id).all()
+        stats = {r[0]: (r[1], r[2]) for r in rows}
+
     result = []
     for student in students:
-        # Get all recordings for this student
-        recordings = db.query(Recording).filter(
-            Recording.student_id == student.id
-        ).all()
-
-        total_recordings = len(recordings)
-
-        # Calculate average score in Python to avoid SQLAlchemy JSON field caching issues
-        scores = [
-            r.automated_scores.get('pronunciation_score')
-            for r in recordings
-            if r.automated_scores and 'pronunciation_score' in r.automated_scores
-        ]
-        avg_score = sum(scores) / len(scores) if scores else 0
-
+        total, avg_score = stats.get(student.id, (0, None))
         result.append({
             "id": student.id,
             "username": student.username,
             "email": student.email,
-            "total_recordings": total_recordings,
+            "total_recordings": total,
             "average_score": round(float(avg_score), 2) if avg_score else 0
         })
 

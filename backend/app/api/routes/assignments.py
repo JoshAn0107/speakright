@@ -638,23 +638,24 @@ def get_assignment_progress(
     total_words = len(assignment.words)
     student_progress = []
 
+    # one aggregate query for all students: submission count + average score
+    agg = {
+        r[0]: (r[1], r[2])
+        for r in db.query(
+            AssignmentSubmission.student_id,
+            func.count(AssignmentSubmission.id),
+            func.avg(func.json_extract(Recording.automated_scores, "$.pronunciation_score"))
+        ).outerjoin(
+            Recording, AssignmentSubmission.recording_id == Recording.id
+        ).filter(
+            AssignmentSubmission.assignment_id == assignment_id
+        ).group_by(AssignmentSubmission.student_id).all()
+    }
+
     for assignment_student in assignment.students:
         student = assignment_student.student
-
-        # submissions with their recording scores for this assignment
-        submissions = db.query(AssignmentSubmission).filter(
-            AssignmentSubmission.assignment_id == assignment_id,
-            AssignmentSubmission.student_id == student.id
-        ).all()
-        completed_count = len(submissions)
-
-        scores = []
-        for sub in submissions:
-            if sub.recording and sub.recording.automated_scores:
-                score = sub.recording.automated_scores.get("pronunciation_score")
-                if score is not None:
-                    scores.append(float(score))
-        average_score = round(sum(scores) / len(scores), 1) if scores else None
+        completed_count, avg_raw = agg.get(student.id, (0, None))
+        average_score = round(float(avg_raw), 1) if avg_raw is not None else None
 
         completion_percentage = (completed_count / total_words * 100) if total_words > 0 else 0
 
