@@ -4,8 +4,14 @@ import Navbar from '../Common/Navbar';
 import RecordingInterface from './RecordingInterface';
 import assignmentService from '../../services/assignmentService';
 import studentService from '../../services/studentService';
+import ContinuousTest from './ContinuousTest';
 
 function AssignmentPractice({ assignment, onBack }) {
+  // 连读测试模式走独立流程
+  if (assignment.mode === 'continuous') {
+    return <ContinuousTest assignment={assignment} onBack={onBack} />;
+  }
+
   const [assignmentDetails, setAssignmentDetails] = useState(null);
   const [progress, set进度] = useState(null);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);

@@ -18,6 +18,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
 
   // Step 3: Assignment details
   const [title, setTitle] = useState('');
+  const [mode, setMode] = useState('practice');
   const [description, set描述] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [students, setStudents] = useState([]);
@@ -227,6 +228,7 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
 
       const assignmentData = {
         title: title.trim(),
+        mode,
         description: description.trim() || null,
         word_database_id: selectedDatabase.id,
         due_date: dueDate || null,
@@ -464,6 +466,42 @@ function CreateAssignment({ onBack, onAssignmentCreated }) {
               <h2 className="text-xl font-semibold mb-4">作业详情</h2>
 
               <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    作业模式 *
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setMode('practice')}
+                      className={`p-4 rounded-lg border-2 text-left transition-all ${
+                        mode === 'practice'
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="font-semibold text-gray-900">练习模式</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        逐词录音，可反复练习，适合日常作业
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMode('continuous')}
+                      className={`p-4 rounded-lg border-2 text-left transition-all ${
+                        mode === 'continuous'
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="font-semibold text-gray-900">连读测试</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        倒计时后限时一次读完全部单词，防止查词，适合测验
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     标题 *

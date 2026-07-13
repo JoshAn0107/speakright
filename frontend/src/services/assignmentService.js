@@ -145,6 +145,17 @@ const assignmentService = {
     return response.data;
   },
 
+  submitContinuous: async (assignmentId, audioBlob) => {
+    const formData = new FormData();
+    formData.append('audio_file', audioBlob, 'continuous.wav');
+    const response = await api.post(
+      `/api/assignments/student/assignments/${assignmentId}/submit-continuous`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 180000 }
+    );
+    return response.data;
+  },
+
   getStudentAssignmentProgress: async (assignmentId) => {
     const response = await api.get(`/api/assignments/student/assignments/${assignmentId}/progress`);
     return response.data;
