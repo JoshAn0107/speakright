@@ -29,7 +29,7 @@ function ContinuousTest({ assignment, onBack }) {
     // 有历史成绩就先展示（比如上次提交后没等评分离开了）
     assignmentService.getContinuousResult(assignment.id).then((r) => {
       if (r.status === 'done') { setResult(r); setPhase('done'); }
-      else if (r.status === 'scoring') { setPhase('submitted'); pollResult(); }
+      else if (r.status === 'scoring') { setPhase('submitted'); }
       else if (r.status === 'failed') { setResult({ failed: true, message: r.message }); setPhase('done'); }
     }).catch(() => {});
     return () => cleanup();
@@ -254,30 +254,63 @@ function ContinuousTest({ assignment, onBack }) {
     );
   }
 
-  if (phase === 'scoring' || phase === 'submitted') {
+  if (phase === 'scoring') {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="max-w-xl mx-auto px-4 py-20 text-center">
           <div className="card">
-            {phase === 'scoring' ? (
-              <>
-                <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-primary-600 mx-auto mb-6"></div>
-                <h2 className="text-xl font-bold text-gray-900 mb-1">正在提交录音...</h2>
-              </>
-            ) : (
-              <>
-                <div className="text-5xl mb-4">✅</div>
-                <h2 className="text-xl font-bold text-gray-900 mb-1">已提交！系统正在评分</h2>
-                <p className="text-gray-600 text-sm mb-6">
-                  不用等在这里——评好了这个页面会自动显示成绩，
-                  <br />你也可以先返回，稍后在作业里查看结果。
-                </p>
-                <button onClick={onBack} className="btn-primary px-8">
-                  返回作业列表
-                </button>
-              </>
-            )}
+            <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-primary-600 mx-auto mb-6"></div>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">正在提交录音...</h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'submitted') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-xl mx-auto px-4 py-20 text-center">
+          <div className="card">
+            <div className="text-5xl mb-4">🎉</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">连读测试完成</h2>
+            <div className="flex flex-col gap-3 max-w-xs mx-auto">
+              <button onClick={viewResult} className="btn-primary py-3">
+                查看成绩
+              </button>
+              <button
+                onClick={() => { setResult(null); setPhase('ready'); }}
+                className="btn-secondary py-3"
+              >
+                重做
+              </button>
+              <button
+                onClick={onBack}
+                className="py-3 text-gray-600 hover:text-gray-900 font-medium"
+              >
+                返回作业列表
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'checking') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-xl mx-auto px-4 py-20 text-center">
+          <div className="card">
+            <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-primary-600 mx-auto mb-6"></div>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">正在评分整段朗读...</h2>
+            <p className="text-gray-600 text-sm mb-6">大约需要 10–20 秒，评好自动显示成绩</p>
+            <button onClick={onBack} className="text-sm text-gray-500 hover:text-gray-700">
+              先返回，稍后再看
+            </button>
           </div>
         </div>
       </div>
