@@ -26,6 +26,12 @@ function ContinuousTest({ assignment, onBack }) {
       .then(setDetails)
       .catch(() => alert('加载作业失败'))
       .finally(() => setLoading(false));
+    // 有历史成绩就先展示（比如上次提交后没等评分离开了）
+    assignmentService.getContinuousResult(assignment.id).then((r) => {
+      if (r.status === 'done') { setResult(r); setPhase('done'); }
+      else if (r.status === 'scoring') { setPhase('submitted'); pollResult(); }
+      else if (r.status === 'failed') { setResult({ failed: true, message: r.message }); setPhase('done'); }
+    }).catch(() => {});
     return () => cleanup();
   }, [assignment.id]);
 
@@ -156,6 +162,28 @@ function ContinuousTest({ assignment, onBack }) {
   }
 
   if (phase === 'done' && result) {
+    if (result.failed) {
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <Navbar />
+          <div className="max-w-xl mx-auto px-4 py-20 text-center">
+            <div className="card">
+              <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-gray-900 mb-2">这次没评好</h2>
+              <p className="text-gray-600 text-sm mb-6">{result.message || '可以重新测试，或等老师人工评分'}</p>
+              <div className="flex gap-3">
+                <button onClick={() => { setResult(null); setPhase('ready'); }} className="flex-1 btn-secondary">
+                  重新测试
+                </button>
+                <button onClick={onBack} className="flex-1 btn-primary">
+                  返回作业列表
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
     const missed = (result.per_word || []).filter((w) => w.error === '漏读');
     return (
       <div className="min-h-screen bg-gray-50">
@@ -226,15 +254,30 @@ function ContinuousTest({ assignment, onBack }) {
     );
   }
 
-  if (phase === 'scoring') {
+  if (phase === 'scoring' || phase === 'submitted') {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="max-w-xl mx-auto px-4 py-20 text-center">
           <div className="card">
-            <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-primary-600 mx-auto mb-6"></div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">正在评分整段朗读...</h2>
-            <p className="text-gray-600 text-sm">大约需要 10–20 秒，请不要关闭页面</p>
+            {phase === 'scoring' ? (
+              <>
+                <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-primary-600 mx-auto mb-6"></div>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">正在提交录音...</h2>
+              </>
+            ) : (
+              <>
+                <div className="text-5xl mb-4">✅</div>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">已提交！系统正在评分</h2>
+                <p className="text-gray-600 text-sm mb-6">
+                  不用等在这里——评好了这个页面会自动显示成绩，
+                  <br />你也可以先返回，稍后在作业里查看结果。
+                </p>
+                <button onClick={onBack} className="btn-primary px-8">
+                  返回作业列表
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

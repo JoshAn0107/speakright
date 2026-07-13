@@ -156,6 +156,11 @@ const assignmentService = {
     return response.data;
   },
 
+  getContinuousResult: async (assignmentId) => {
+    const response = await api.get(`/api/assignments/student/assignments/${assignmentId}/continuous-result`);
+    return response.data;
+  },
+
   getStudentAssignmentProgress: async (assignmentId) => {
     const response = await api.get(`/api/assignments/student/assignments/${assignmentId}/progress`);
     return response.data;

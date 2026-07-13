@@ -708,31 +708,41 @@ class PronunciationService:
             done.wait(timeout=240)
             recognizer.stop_continuous_recognition()
 
-            # map azure word results back onto the reference sequence
+            # map azure word results back onto the reference sequence;
+            # a reference entry may be a multi-token phrase (well done, only child)
+            def _tok(t):
+                return re.sub(r"[^a-z' ]", " ", (t or "").lower()).split()
+
             per_word = []
             ai = 0
             insertions = 0
             for ref in reference_words:
-                found = None
-                # scan forward a small window for the matching reference word
-                for j in range(ai, min(ai + 4, len(azure_words))):
-                    aw = azure_words[j]
-                    if aw["word"].lower().strip(".,!?") == ref.lower():
-                        insertions += sum(
-                            1 for k in range(ai, j)
-                            if (azure_words[k].get("error_type") or "") == "Insertion"
-                        )
-                        found = aw
-                        ai = j + 1
-                        break
-                if found is None:
+                ref_tokens = _tok(ref) or [ref.lower()]
+                found_seq = None
+                for j in range(ai, min(ai + 5, len(azure_words))):
+                    if _tok(azure_words[j]["word"])[:1] == ref_tokens[:1]:
+                        seq = azure_words[j:j + len(ref_tokens)]
+                        seq_tokens = [t for w in seq for t in _tok(w["word"])]
+                        if seq_tokens == ref_tokens:
+                            insertions += sum(
+                                1 for k in range(ai, j)
+                                if (azure_words[k].get("error_type") or "") == "Insertion"
+                            )
+                            found_seq = seq
+                            ai = j + len(seq)
+                            break
+                if not found_seq:
                     per_word.append({"word": ref, "score": 0, "error": "漏读"})
-                elif (found.get("error_type") or "None") == "Omission":
+                    continue
+                etypes = {(w.get("error_type") or "None") for w in found_seq}
+                accs = [float(w.get("accuracy_score") or 0) for w in found_seq]
+                mean_acc = round(sum(accs) / len(accs), 1) if accs else 0
+                if etypes == {"Omission"}:
                     per_word.append({"word": ref, "score": 0, "error": "漏读"})
-                elif (found.get("error_type") or "None") == "Mispronunciation":
-                    per_word.append({"word": ref, "score": round(float(found["accuracy_score"] or 0), 1), "error": "发音错误"})
+                elif "Mispronunciation" in etypes or "Omission" in etypes:
+                    per_word.append({"word": ref, "score": mean_acc, "error": "发音错误"})
                 else:
-                    per_word.append({"word": ref, "score": round(float(found["accuracy_score"] or 0), 1), "error": None})
+                    per_word.append({"word": ref, "score": mean_acc, "error": None})
 
             read_count = sum(1 for w in per_word if w["error"] != "漏读")
             accuracy_overall = sum(w["score"] for w in per_word) / len(per_word) if per_word else 0

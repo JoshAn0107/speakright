@@ -793,9 +793,7 @@ def submit_assignment_continuous(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_student)
 ):
-    """Test mode: one continuous recording of all assignment words."""
-    from app.services.pronunciation_service import pronunciation_service
-    from app.services.feedback_service import FeedbackService
+    """Test mode: accept the take immediately, score it in the background."""
     from app.services.shadow_service import submit_shadow
     from app.models.recording import Recording, RecordingStatus
     from app.core.config import settings as app_settings
@@ -812,7 +810,6 @@ def submit_assignment_continuous(
     if not reference_words:
         raise HTTPException(status_code=400, detail="作业没有单词")
 
-    # save the audio
     upload_dir = Path(app_settings.UPLOAD_DIR) / str(current_user.id)
     upload_dir.mkdir(parents=True, exist_ok=True)
     ext = os.path.splitext(audio_file.filename or "")[1] or ".wav"
@@ -821,37 +818,20 @@ def submit_assignment_continuous(
         import shutil as _shutil
         _shutil.copyfileobj(audio_file.file, buffer)
 
-    result = pronunciation_service.assess_continuous_reading(str(file_path), reference_words)
-    if result.get("error"):
-        raise HTTPException(status_code=500, detail=f"评分失败：{result['error']}")
-
-    overall = result.get("pronunciation_score", 0)
-    grade = FeedbackService._calculate_grade(overall)
-    missed = [w["word"] for w in result.get("per_word", []) if w.get("error") == "漏读"]
-    weak = [w["word"] for w in result.get("per_word", []) if w.get("error") != "漏读" and w.get("score", 100) < 60]
-    parts = [f"连读测试完成：{result.get('words_read', 0)}/{result.get('words_total', 0)} 个单词，总分 {overall:.0f}。"]
-    if missed:
-        parts.append(f"漏读：{'、'.join(missed[:10])}{'…' if len(missed) > 10 else ''}。")
-    if weak:
-        parts.append(f"发音需加强：{'、'.join(weak[:10])}{'…' if len(weak) > 10 else ''}。")
-    if not missed and not weak:
-        parts.append("全部单词都读到位了，很棒！")
-    feedback_text = " ".join(parts)
-
+    # placeholder recording: student doesn't wait for scoring
     recording = Recording(
         student_id=current_user.id,
         word_text=f"[连读] {assignment.title}"[:100],
         audio_file_path=str(file_path),
-        automated_scores=result,
-        teacher_feedback=feedback_text,
-        teacher_grade=grade,
-        status=RecordingStatus.REVIEWED,
-        reviewed_at=datetime.utcnow()
+        automated_scores=None,
+        teacher_feedback="评分中…",
+        teacher_grade=None,
+        status=RecordingStatus.PENDING,
     )
     db.add(recording)
     db.flush()
 
-    # replace previous submissions for this assignment (retake supported)
+    # submissions recorded now so progress reflects completion immediately
     db.query(AssignmentSubmission).filter(
         AssignmentSubmission.assignment_id == assignment_id,
         AssignmentSubmission.student_id == current_user.id
@@ -865,23 +845,95 @@ def submit_assignment_continuous(
         ))
     assignment_student.completed_at = datetime.utcnow()
     db.commit()
+    recording_id = recording.id
 
-    try:
-        submit_shadow(recording.id, " ".join(reference_words), str(file_path), result)
-    except Exception as e:
-        print(f"Shadow submit failed (non-fatal): {e}")
+    def score_in_background():
+        from app.db.session import SessionLocal
+        from app.services.pronunciation_service import pronunciation_service
+        from app.services.feedback_service import FeedbackService
+        session = SessionLocal()
+        try:
+            result = pronunciation_service.assess_continuous_reading(str(file_path), reference_words)
+            rec = session.query(Recording).filter(Recording.id == recording_id).first()
+            if not rec:
+                return
+            if result.get("error"):
+                rec.automated_scores = {"error": result["error"], "pronunciation_score": 0, "per_word": []}
+                rec.teacher_feedback = "自动评分失败，可以重新测试，或等老师人工评分。"
+                rec.status = RecordingStatus.PENDING
+            else:
+                overall = result.get("pronunciation_score", 0)
+                grade = FeedbackService._calculate_grade(overall)
+                missed = [w["word"] for w in result.get("per_word", []) if w.get("error") == "漏读"]
+                weak = [w["word"] for w in result.get("per_word", []) if w.get("error") != "漏读" and w.get("score", 100) < 60]
+                parts = [f"连读测试完成：{result.get('words_read', 0)}/{result.get('words_total', 0)} 个单词，总分 {overall:.0f}。"]
+                if missed:
+                    parts.append(f"漏读：{'、'.join(missed[:10])}{'…' if len(missed) > 10 else ''}。")
+                if weak:
+                    parts.append(f"发音需加强：{'、'.join(weak[:10])}{'…' if len(weak) > 10 else ''}。")
+                if not missed and not weak:
+                    parts.append("全部单词都读到位了，很棒！")
+                rec.automated_scores = result
+                rec.teacher_feedback = " ".join(parts)
+                rec.teacher_grade = grade
+                rec.status = RecordingStatus.REVIEWED
+                rec.reviewed_at = datetime.utcnow()
+            session.commit()
+            try:
+                submit_shadow(recording_id, " ".join(reference_words), str(file_path), result if not result.get("error") else {})
+            except Exception as e:
+                print(f"Shadow submit failed (non-fatal): {e}")
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+        finally:
+            session.close()
+
+    import threading
+    threading.Thread(target=score_in_background, daemon=True, name=f"continuous-score-{recording_id}").start()
 
     return {
-        "message": "连读测试已评分",
-        "recording_id": recording.id,
-        "pronunciation_score": overall,
-        "grade": grade,
-        "feedback": feedback_text,
-        "per_word": result.get("per_word", []),
-        "words_read": result.get("words_read"),
-        "words_total": result.get("words_total"),
-        "completeness_score": result.get("completeness_score"),
-        "fluency_score": result.get("fluency_score"),
+        "message": "已提交，正在后台评分",
+        "recording_id": recording_id,
+        "status": "scoring"
+    }
+
+
+@router.get("/student/assignments/{assignment_id}/continuous-result")
+def get_continuous_result(
+    assignment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_student)
+):
+    """Poll the latest continuous-test result for this assignment."""
+    from app.models.recording import Recording, RecordingStatus
+
+    sub = db.query(AssignmentSubmission).filter(
+        AssignmentSubmission.assignment_id == assignment_id,
+        AssignmentSubmission.student_id == current_user.id,
+        AssignmentSubmission.recording_id.isnot(None)
+    ).order_by(AssignmentSubmission.id.desc()).first()
+    if not sub or not sub.recording:
+        return {"status": "none"}
+
+    rec = sub.recording
+    scores = rec.automated_scores or {}
+    if rec.status == RecordingStatus.PENDING and not scores:
+        return {"status": "scoring", "message": "评分中，请稍后刷新"}
+    if scores.get("error"):
+        return {"status": "failed", "message": "这次没评好，可以重新测试，或等老师人工评分"}
+
+    return {
+        "status": "done",
+        "recording_id": rec.id,
+        "pronunciation_score": scores.get("pronunciation_score"),
+        "grade": rec.teacher_grade,
+        "feedback": rec.teacher_feedback,
+        "per_word": scores.get("per_word", []),
+        "words_read": scores.get("words_read"),
+        "words_total": scores.get("words_total"),
+        "completeness_score": scores.get("completeness_score"),
+        "fluency_score": scores.get("fluency_score"),
     }
 
 
