@@ -114,8 +114,22 @@ class PronunciationService:
                     except OSError:
                         pass
 
-            _executor = ThreadPoolExecutor(max_workers=1)
+            from app.services.shadow_service import gop_transcribe_sync
+            gop_copy = converted_file_path + ".gop.wav"
+            _shutil.copyfile(converted_file_path, gop_copy)
+
+            def _gop_and_cleanup(path, ref):
+                try:
+                    return gop_transcribe_sync(path, ref)
+                finally:
+                    try:
+                        os.remove(path)
+                    except OSError:
+                        pass
+
+            _executor = ThreadPoolExecutor(max_workers=2)
             transcribe_future = _executor.submit(_transcribe_and_cleanup, transcribe_copy)
+            gop_future = _executor.submit(_gop_and_cleanup, gop_copy, reference_text)
             _executor.shutdown(wait=False)
 
             # Configure speech service
@@ -195,6 +209,12 @@ class PronunciationService:
                 assessment["independent_transcript"] = (
                     transcribe_future.result(timeout=60) if transcribe_future else ""
                 )
+                try:
+                    gop_heard, gop_score = gop_future.result(timeout=8)
+                except Exception:
+                    gop_heard, gop_score = None, None
+                assessment["gop_heard"] = gop_heard
+                assessment["gop_score"] = gop_score
 
                 # acoustic word-stress check for single multisyllabic words
                 if len(reference_text.split()) == 1 and syllable_words:
@@ -437,10 +457,13 @@ class PronunciationService:
             if (w.get("error_type") or "None") not in ("None", None)
         ]
         phonemes = [p for w in words for p in (w.get("phonemes") or [])]
-        weak = [p for p in phonemes if float(p.get("accuracy_score") or 0) < 60]
-        weak_ratio = (len(weak) / len(phonemes)) if phonemes else 0.0
+        phoneme_scores = [float(p.get("accuracy_score") or 0) for p in phonemes]
+        phoneme_mean = (sum(phoneme_scores) / len(phoneme_scores)) if phoneme_scores else None
+        weak = [x for x in phoneme_scores if x < 60]
+        weak_ratio = (len(weak) / len(phoneme_scores)) if phoneme_scores else 0.0
         result["error_word_count"] = len(error_words)
         result["weak_phoneme_ratio"] = round(weak_ratio, 2)
+        result["phoneme_mean"] = round(phoneme_mean, 1) if phoneme_mean is not None else None
 
         ref_tokens = reference.split()
         heard_tokens = heard.split()
@@ -456,7 +479,11 @@ class PronunciationService:
                 elif similarity >= 0.85:
                     score = azure_score * 0.9
                 else:
-                    score = min(azure_score * (0.25 + 0.5 * similarity), 55.0)
+                    # teacher calibration: a recognizable-but-warped attempt
+                    # (decent phonemes, wrong STT text) deserves C-, not F
+                    harsh = azure_score * (0.25 + 0.5 * similarity)
+                    floor = (phoneme_mean * 0.8) if phoneme_mean is not None else 0.0
+                    score = min(max(harsh, floor), 60.0)
             else:
                 # phrase/sentence: token-level alignment, penalize missing or extra words
                 sm = difflib.SequenceMatcher(None, ref_tokens, heard_tokens)
@@ -474,6 +501,33 @@ class PronunciationService:
                 score = min(score, 65.0)
             elif weak_ratio > 0.4:
                 score = min(score, 75.0)
+
+            # STT autocorrects near-miss words, so lean on phoneme evidence:
+            # the overall Azure score must stay near what the phonemes support
+            if phoneme_mean is not None:
+                score = min(score, phoneme_mean + 12.0)
+            clearly_bad = sum(1 for x in phoneme_scores if x < 55)
+            mediocre = sum(1 for x in phoneme_scores if x < 65)
+            if clearly_bad >= 2:
+                score = min(score, 72.0)
+            elif mediocre >= 3:
+                score = min(score, 80.0)
+
+            # dual-signal rule (calibrated on teacher corrections + 1341 shadow
+            # rows): the prior-free GOP model heard something quite different
+            # AND Azure's own phoneme evidence is mediocre -> not a clean read.
+            # Either signal alone is too noisy; together they flag ~9% of
+            # high-Azure reads and matched every teacher-flagged case.
+            gop_heard = result.get("gop_heard")
+            if gop_heard and phoneme_mean is not None:
+                gop_sim = difflib.SequenceMatcher(
+                    None,
+                    re.sub(r"[^a-z]", "", gop_heard.lower()),
+                    re.sub(r"[^a-z]", "", reference.lower()),
+                ).ratio()
+                result["gop_similarity"] = round(gop_sim, 2)
+                if gop_sim < 0.55 and phoneme_mean <= 82:
+                    score = min(score, 66.0)
 
             # prosody (stress / intonation / rhythm): wrong stress must not score high
             prosody = result.get("prosody_score")
@@ -542,4 +596,198 @@ class PronunciationService:
 
 
 # Singleton instance
+
+    def _plain_transcribe_continuous(self, audio_file_path: str) -> str:
+        """Unbiased full-file transcription using continuous recognition."""
+        try:
+            speech_config = speechsdk.SpeechConfig(
+                subscription=settings.AZURE_SPEECH_KEY,
+                region=settings.AZURE_REGION
+            )
+            speech_config.speech_recognition_language = "en-US"
+            audio_config = speechsdk.audio.AudioConfig(filename=audio_file_path)
+            recognizer = speechsdk.SpeechRecognizer(
+                speech_config=speech_config, audio_config=audio_config
+            )
+            import threading as _threading
+            texts = []
+            done = _threading.Event()
+            recognizer.recognized.connect(
+                lambda evt: texts.append(evt.result.text)
+                if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech else None
+            )
+            recognizer.session_stopped.connect(lambda evt: done.set())
+            recognizer.canceled.connect(lambda evt: done.set())
+            recognizer.start_continuous_recognition()
+            done.wait(timeout=180)
+            recognizer.stop_continuous_recognition()
+            return " ".join(texts)
+        except Exception as e:
+            print(f"Continuous transcription failed (non-fatal): {e}")
+            return ""
+
+    def assess_continuous_reading(self, audio_file_path: str, reference_words: list) -> Dict:
+        """Assess one continuous recording of many words (test mode).
+
+        Uses continuous recognition (recognize_once stops at the first pause)
+        with miscue enabled, so omitted/inserted words are flagged. Returns an
+        overall score plus a per-reference-word breakdown.
+        """
+        reference_text = " ".join(reference_words)
+        if not self.enabled:
+            return {"error": "未配置语音服务", "pronunciation_score": 0, "per_word": []}
+
+        converted = None
+        transcribe_future = None
+        try:
+            converted = self._convert_to_azure_format(audio_file_path)
+
+            # unbiased transcript in parallel, on its own copy of the file
+            import shutil as _shutil
+            from concurrent.futures import ThreadPoolExecutor
+            stt_copy = converted + ".stt.wav"
+            _shutil.copyfile(converted, stt_copy)
+
+            def _stt(path):
+                try:
+                    return self._plain_transcribe_continuous(path)
+                finally:
+                    try:
+                        os.remove(path)
+                    except OSError:
+                        pass
+
+            _ex = ThreadPoolExecutor(max_workers=1)
+            transcribe_future = _ex.submit(_stt, stt_copy)
+            _ex.shutdown(wait=False)
+
+            speech_config = speechsdk.SpeechConfig(
+                subscription=settings.AZURE_SPEECH_KEY,
+                region=settings.AZURE_REGION
+            )
+            speech_config.speech_recognition_language = "en-US"
+            pa_config = speechsdk.PronunciationAssessmentConfig(
+                reference_text=reference_text,
+                grading_system=speechsdk.PronunciationAssessmentGradingSystem.HundredMark,
+                granularity=speechsdk.PronunciationAssessmentGranularity.Phoneme,
+                enable_miscue=True
+            )
+            audio_config = speechsdk.audio.AudioConfig(filename=converted)
+            recognizer = speechsdk.SpeechRecognizer(
+                speech_config=speech_config, audio_config=audio_config
+            )
+            pa_config.apply_to(recognizer)
+
+            import threading as _threading
+            azure_words = []
+            texts = []
+            fluency_parts = []
+            done = _threading.Event()
+
+            def on_recognized(evt):
+                if evt.result.reason != speechsdk.ResultReason.RecognizedSpeech:
+                    return
+                texts.append(evt.result.text)
+                try:
+                    pr = speechsdk.PronunciationAssessmentResult(evt.result)
+                    if pr.fluency_score is not None:
+                        fluency_parts.append(float(pr.fluency_score))
+                    for w in pr.words:
+                        azure_words.append({
+                            "word": w.word,
+                            "accuracy_score": w.accuracy_score,
+                            "error_type": getattr(w, "error_type", None),
+                        })
+                except Exception as e:
+                    print(f"PA parse error (segment): {e}")
+
+            recognizer.recognized.connect(on_recognized)
+            recognizer.session_stopped.connect(lambda evt: done.set())
+            recognizer.canceled.connect(lambda evt: done.set())
+            recognizer.start_continuous_recognition()
+            done.wait(timeout=240)
+            recognizer.stop_continuous_recognition()
+
+            # map azure word results back onto the reference sequence
+            per_word = []
+            ai = 0
+            insertions = 0
+            for ref in reference_words:
+                found = None
+                # scan forward a small window for the matching reference word
+                for j in range(ai, min(ai + 4, len(azure_words))):
+                    aw = azure_words[j]
+                    if aw["word"].lower().strip(".,!?") == ref.lower():
+                        insertions += sum(
+                            1 for k in range(ai, j)
+                            if (azure_words[k].get("error_type") or "") == "Insertion"
+                        )
+                        found = aw
+                        ai = j + 1
+                        break
+                if found is None:
+                    per_word.append({"word": ref, "score": 0, "error": "漏读"})
+                elif (found.get("error_type") or "None") == "Omission":
+                    per_word.append({"word": ref, "score": 0, "error": "漏读"})
+                elif (found.get("error_type") or "None") == "Mispronunciation":
+                    per_word.append({"word": ref, "score": round(float(found["accuracy_score"] or 0), 1), "error": "发音错误"})
+                else:
+                    per_word.append({"word": ref, "score": round(float(found["accuracy_score"] or 0), 1), "error": None})
+
+            read_count = sum(1 for w in per_word if w["error"] != "漏读")
+            accuracy_overall = sum(w["score"] for w in per_word) / len(per_word) if per_word else 0
+            completeness = (read_count / len(reference_words) * 100) if reference_words else 0
+            fluency = sum(fluency_parts) / len(fluency_parts) if fluency_parts else 0
+
+            overall = accuracy_overall * 0.7 + completeness * 0.15 + fluency * 0.15
+
+            # unbiased transcript cross-check (same idea as single-word strict layer)
+            independent = ""
+            if transcribe_future is not None:
+                try:
+                    independent = transcribe_future.result(timeout=200)
+                except Exception:
+                    pass
+            token_ratio = None
+            if independent:
+                ref_tokens = self._normalize_text(reference_text).split()
+                heard_tokens = self._normalize_text(independent).split()
+                sm = difflib.SequenceMatcher(None, ref_tokens, heard_tokens)
+                matched = sum(b.size for b in sm.get_matching_blocks())
+                token_ratio = matched / max(len(ref_tokens), len(heard_tokens)) if heard_tokens else 0.0
+                # if the unbiased transcript heard far fewer of the words, trust it
+                if token_ratio < (read_count / len(reference_words)) * 0.6:
+                    overall = min(overall, 55.0)
+
+            return {
+                "mode": "continuous",
+                "pronunciation_score": round(max(0.0, min(100.0, overall)), 1),
+                "accuracy_score": round(accuracy_overall, 1),
+                "completeness_score": round(completeness, 1),
+                "fluency_score": round(fluency, 1),
+                "recognized_text": " ".join(texts),
+                "independent_transcript": independent,
+                "token_match_ratio": round(token_ratio, 2) if token_ratio is not None else None,
+                "words_read": read_count,
+                "words_total": len(reference_words),
+                "insertions": insertions,
+                "per_word": per_word,
+            }
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return {"error": str(e), "pronunciation_score": 0, "per_word": []}
+        finally:
+            if transcribe_future is not None and not transcribe_future.done():
+                try:
+                    transcribe_future.result(timeout=200)
+                except Exception:
+                    pass
+            if converted and converted != audio_file_path:
+                try:
+                    if os.path.exists(converted):
+                        os.remove(converted)
+                except OSError:
+                    pass
+
 pronunciation_service = PronunciationService()

@@ -49,6 +49,7 @@ class Assignment(Base):
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     word_database_id = Column(Integer, ForeignKey("word_databases.id", ondelete="SET NULL"), nullable=True)
+    mode = Column(String(20), default="practice")  # practice(逐词) | continuous(连读测试)
     due_date = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

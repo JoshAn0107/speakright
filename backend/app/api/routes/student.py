@@ -101,8 +101,9 @@ async def submit_recording(
             automated_scores=assessment_result,
             teacher_feedback=automated_feedback['feedback_text'],
             teacher_grade=automated_feedback['grade'],
-            status=RecordingStatus.REVIEWED,  # Automatically reviewed by system
-            reviewed_at=datetime.utcnow()
+            status=(RecordingStatus.PENDING if assessment_result.get("error")
+                    else RecordingStatus.REVIEWED),
+            reviewed_at=(None if assessment_result.get("error") else datetime.utcnow())
         )
 
         db.add(recording)

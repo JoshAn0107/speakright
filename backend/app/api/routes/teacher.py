@@ -183,7 +183,7 @@ def get_students(
         rows = db.query(
             Recording.student_id,
             func.count(Recording.id),
-            func.avg(func.json_extract(Recording.automated_scores, "$.pronunciation_score"))
+            func.avg(func.nullif(func.json_extract(Recording.automated_scores, "$.pronunciation_score"), 0))
         ).filter(
             Recording.student_id.in_(student_ids_list)
         ).group_by(Recording.student_id).all()
@@ -240,12 +240,12 @@ def get_analytics(
 
     total_recordings = query.count()
     pending_reviews = query.filter(Recording.status == RecordingStatus.PENDING).count()
-    avg_score = query.with_entities(func.avg(score_expr)).scalar() or 0
+    avg_score = query.with_entities(func.avg(func.nullif(score_expr, 0))).scalar() or 0
 
     word_rows = query.with_entities(
         Recording.word_text,
         func.count(Recording.id),
-        func.avg(score_expr)
+        func.avg(func.nullif(score_expr, 0))
     ).filter(Recording.word_text.isnot(None)).group_by(Recording.word_text).all()
 
     most_practiced_words = [

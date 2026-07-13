@@ -502,6 +502,7 @@ def create_assignment(
             teacher_id=current_user.id,
             title=assignment_data.title,
             description=assignment_data.description,
+            mode=assignment_data.mode if assignment_data.mode in ("practice", "continuous") else "practice",
             word_database_id=assignment_data.word_database_id,
             due_date=assignment_data.due_date
         )
@@ -644,7 +645,7 @@ def get_assignment_progress(
         for r in db.query(
             AssignmentSubmission.student_id,
             func.count(AssignmentSubmission.id),
-            func.avg(func.json_extract(Recording.automated_scores, "$.pronunciation_score"))
+            func.avg(func.nullif(func.json_extract(Recording.automated_scores, "$.pronunciation_score"), 0))
         ).outerjoin(
             Recording, AssignmentSubmission.recording_id == Recording.id
         ).filter(
@@ -783,6 +784,105 @@ def get_student_assignment(
 
     assignment = assignment_student.assignment
     return build_student_assignment_response(assignment, current_user.id, db)
+
+
+@router.post("/student/assignments/{assignment_id}/submit-continuous")
+def submit_assignment_continuous(
+    assignment_id: int,
+    audio_file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_student)
+):
+    """Test mode: one continuous recording of all assignment words."""
+    from app.services.pronunciation_service import pronunciation_service
+    from app.services.feedback_service import FeedbackService
+    from app.services.shadow_service import submit_shadow
+    from app.models.recording import Recording, RecordingStatus
+    from app.core.config import settings as app_settings
+
+    assignment_student = db.query(AssignmentStudent).filter(
+        AssignmentStudent.assignment_id == assignment_id,
+        AssignmentStudent.student_id == current_user.id
+    ).first()
+    if not assignment_student:
+        raise HTTPException(status_code=404, detail="未找到作业")
+
+    assignment = assignment_student.assignment
+    reference_words = [w.word_text for w in sorted(assignment.words, key=lambda x: x.order_index)]
+    if not reference_words:
+        raise HTTPException(status_code=400, detail="作业没有单词")
+
+    # save the audio
+    upload_dir = Path(app_settings.UPLOAD_DIR) / str(current_user.id)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    ext = os.path.splitext(audio_file.filename or "")[1] or ".wav"
+    file_path = upload_dir / f"continuous_{assignment_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{ext}"
+    with open(file_path, "wb") as buffer:
+        import shutil as _shutil
+        _shutil.copyfileobj(audio_file.file, buffer)
+
+    result = pronunciation_service.assess_continuous_reading(str(file_path), reference_words)
+    if result.get("error"):
+        raise HTTPException(status_code=500, detail=f"评分失败：{result['error']}")
+
+    overall = result.get("pronunciation_score", 0)
+    grade = FeedbackService._calculate_grade(overall)
+    missed = [w["word"] for w in result.get("per_word", []) if w.get("error") == "漏读"]
+    weak = [w["word"] for w in result.get("per_word", []) if w.get("error") != "漏读" and w.get("score", 100) < 60]
+    parts = [f"连读测试完成：{result.get('words_read', 0)}/{result.get('words_total', 0)} 个单词，总分 {overall:.0f}。"]
+    if missed:
+        parts.append(f"漏读：{'、'.join(missed[:10])}{'…' if len(missed) > 10 else ''}。")
+    if weak:
+        parts.append(f"发音需加强：{'、'.join(weak[:10])}{'…' if len(weak) > 10 else ''}。")
+    if not missed and not weak:
+        parts.append("全部单词都读到位了，很棒！")
+    feedback_text = " ".join(parts)
+
+    recording = Recording(
+        student_id=current_user.id,
+        word_text=f"[连读] {assignment.title}"[:100],
+        audio_file_path=str(file_path),
+        automated_scores=result,
+        teacher_feedback=feedback_text,
+        teacher_grade=grade,
+        status=RecordingStatus.REVIEWED,
+        reviewed_at=datetime.utcnow()
+    )
+    db.add(recording)
+    db.flush()
+
+    # replace previous submissions for this assignment (retake supported)
+    db.query(AssignmentSubmission).filter(
+        AssignmentSubmission.assignment_id == assignment_id,
+        AssignmentSubmission.student_id == current_user.id
+    ).delete()
+    for word in reference_words:
+        db.add(AssignmentSubmission(
+            assignment_id=assignment_id,
+            student_id=current_user.id,
+            word_text=word,
+            recording_id=recording.id
+        ))
+    assignment_student.completed_at = datetime.utcnow()
+    db.commit()
+
+    try:
+        submit_shadow(recording.id, " ".join(reference_words), str(file_path), result)
+    except Exception as e:
+        print(f"Shadow submit failed (non-fatal): {e}")
+
+    return {
+        "message": "连读测试已评分",
+        "recording_id": recording.id,
+        "pronunciation_score": overall,
+        "grade": grade,
+        "feedback": feedback_text,
+        "per_word": result.get("per_word", []),
+        "words_read": result.get("words_read"),
+        "words_total": result.get("words_total"),
+        "completeness_score": result.get("completeness_score"),
+        "fluency_score": result.get("fluency_score"),
+    }
 
 
 @router.post("/student/assignments/{assignment_id}/submit")
@@ -949,6 +1049,7 @@ def build_assignment_response(assignment: Assignment, db: Session) -> dict:
         "teacher_id": assignment.teacher_id,
         "title": assignment.title,
         "description": assignment.description,
+        "mode": assignment.mode or "practice",
         "word_database_id": assignment.word_database_id,
         "word_database_name": word_database_name,
         "due_date": assignment.due_date,
@@ -1004,6 +1105,7 @@ def build_student_assignment_response(assignment: Assignment, student_id: int, d
         "id": assignment.id,
         "title": assignment.title,
         "description": assignment.description,
+        "mode": assignment.mode or "practice",
         "teacher_name": teacher_name,
         "word_database_name": word_database_name,
         "due_date": assignment.due_date,

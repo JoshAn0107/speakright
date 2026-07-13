@@ -55,6 +55,7 @@ class AssignmentWordCreate(BaseModel):
 class AssignmentCreate(BaseModel):
     title: str
     description: Optional[str] = None
+    mode: str = "practice"  # practice | continuous
     word_database_id: Optional[int] = None
     due_date: Optional[datetime] = None
     words: List[str]  # List of word texts (20-40 words)
@@ -93,6 +94,7 @@ class AssignmentResponse(BaseModel):
     teacher_id: int
     title: str
     description: Optional[str] = None
+    mode: str = "practice"
     word_database_id: Optional[int] = None
     word_database_name: Optional[str] = None
     due_date: Optional[datetime] = None
@@ -111,6 +113,7 @@ class StudentAssignmentResponse(BaseModel):
     id: int
     title: str
     description: Optional[str] = None
+    mode: str = "practice"
     teacher_name: Optional[str] = None
     word_database_name: Optional[str] = None
     due_date: Optional[datetime] = None

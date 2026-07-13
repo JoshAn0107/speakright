@@ -57,6 +57,13 @@ class FeedbackService:
                 "is_automated": True
             }
 
+        if assessment_result.get('error'):
+            return {
+                "feedback_text": "自动评分暂时失败，本次录音已保留，老师会人工评分；你也可以重新录一次。",
+                "grade": "N/A",
+                "is_automated": True
+            }
+
         pronunciation_score = assessment_result.get('pronunciation_score', 0)
         accuracy_score = assessment_result.get('accuracy_score', 0)
         fluency_score = assessment_result.get('fluency_score', 0)
@@ -80,6 +87,14 @@ class FeedbackService:
                 )
             else:
                 feedback_parts.append(f"⚠️ 系统没有听清你读的是不是“{word_text}”，请重读。")
+        elif (assessment_result.get('gop_similarity') is not None
+              and assessment_result['gop_similarity'] < 0.55
+              and (assessment_result.get('phoneme_mean') or 100) <= 82
+              and assessment_result.get('text_match') is not False):
+            heard = (assessment_result.get('gop_heard') or '').strip()
+            feedback_parts.append(
+                f"⚠️ 发音和标准读音有明显差距{f'（系统听到的更接近“{heard}”）' if heard else ''}。放慢速度，听示范音逐个音节模仿。"
+            )
         elif (assessment_result.get('stress_check') or {}).get('match') is False:
             sc = assessment_result['stress_check']
             syllables = sc.get('syllables') or []
