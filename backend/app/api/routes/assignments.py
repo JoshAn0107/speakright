@@ -15,7 +15,7 @@ from app.models.assignment import (
     WordDatabase, WordDatabaseWord, Assignment, AssignmentWord,
     AssignmentStudent, AssignmentSubmission
 )
-from app.models.recording import Recording
+from app.models.recording import Recording, RecordingStatus
 from app.models.wordlist_upload import WordlistUpload
 from app.schemas.assignment import (
     WordDatabaseResponse, WordDatabaseWordResponse,
@@ -713,6 +713,31 @@ def get_student_progress_for_teacher(
 
     submission_dict = {sub.word_text: sub for sub in submissions}
 
+    mode = assignment.mode or "practice"
+
+    # continuous mode: every word shares one take — use its per-word breakdown
+    continuous_summary = None
+    per_word_map = {}
+    if mode == "continuous":
+        latest_sub = max((s for s in submissions if s.recording_id), key=lambda x: x.id, default=None)
+        if latest_sub and latest_sub.recording:
+            rec = latest_sub.recording
+            scores = rec.automated_scores or {}
+            per_word_map = {w.get("word"): w for w in scores.get("per_word", [])}
+            continuous_summary = {
+                "recording_id": rec.id,
+                "audio_file_path": rec.audio_file_path,
+                "pronunciation_score": scores.get("pronunciation_score"),
+                "grade": rec.teacher_grade,
+                "feedback": rec.teacher_feedback,
+                "words_read": scores.get("words_read"),
+                "words_total": scores.get("words_total"),
+                "completeness_score": scores.get("completeness_score"),
+                "fluency_score": scores.get("fluency_score"),
+                "recognized_text": scores.get("recognized_text"),
+                "scoring": scores == {} or (rec.status == RecordingStatus.PENDING and not scores),
+            }
+
     word_list = []
     for word in assignment_words:
         submission = submission_dict.get(word.word_text)
@@ -724,8 +749,12 @@ def get_student_progress_for_teacher(
             "submitted_at": submission.submitted_at if submission else None
         }
 
-        # Get score if recording exists
-        if submission and submission.recording_id:
+        if mode == "continuous":
+            pw = per_word_map.get(word.word_text)
+            if pw:
+                word_info["score"] = pw.get("score")
+                word_info["error"] = pw.get("error")
+        elif submission and submission.recording_id:
             recording = db.query(Recording).filter(Recording.id == submission.recording_id).first()
             if recording and recording.automated_scores:
                 word_info["score"] = recording.automated_scores.get("pronunciation_score", 0)
@@ -738,6 +767,8 @@ def get_student_progress_for_teacher(
     return {
         "assignment_id": assignment_id,
         "assignment_title": assignment.title,
+        "mode": mode,
+        "continuous_summary": continuous_summary,
         "student_id": student_id,
         "total_words": total_words,
         "completed_words": completed_words,
@@ -1050,6 +1081,31 @@ def get_student_assignment_progress(
 
     submission_dict = {sub.word_text: sub for sub in submissions}
 
+    mode = assignment.mode or "practice"
+
+    # continuous mode: every word shares one take — use its per-word breakdown
+    continuous_summary = None
+    per_word_map = {}
+    if mode == "continuous":
+        latest_sub = max((s for s in submissions if s.recording_id), key=lambda x: x.id, default=None)
+        if latest_sub and latest_sub.recording:
+            rec = latest_sub.recording
+            scores = rec.automated_scores or {}
+            per_word_map = {w.get("word"): w for w in scores.get("per_word", [])}
+            continuous_summary = {
+                "recording_id": rec.id,
+                "audio_file_path": rec.audio_file_path,
+                "pronunciation_score": scores.get("pronunciation_score"),
+                "grade": rec.teacher_grade,
+                "feedback": rec.teacher_feedback,
+                "words_read": scores.get("words_read"),
+                "words_total": scores.get("words_total"),
+                "completeness_score": scores.get("completeness_score"),
+                "fluency_score": scores.get("fluency_score"),
+                "recognized_text": scores.get("recognized_text"),
+                "scoring": scores == {} or (rec.status == RecordingStatus.PENDING and not scores),
+            }
+
     word_list = []
     for word in assignment_words:
         submission = submission_dict.get(word.word_text)
@@ -1061,8 +1117,12 @@ def get_student_assignment_progress(
             "submitted_at": submission.submitted_at if submission else None
         }
 
-        # Get score if recording exists
-        if submission and submission.recording_id:
+        if mode == "continuous":
+            pw = per_word_map.get(word.word_text)
+            if pw:
+                word_info["score"] = pw.get("score")
+                word_info["error"] = pw.get("error")
+        elif submission and submission.recording_id:
             recording = db.query(Recording).filter(Recording.id == submission.recording_id).first()
             if recording and recording.automated_scores:
                 word_info["score"] = recording.automated_scores.get("pronunciation_score", 0)

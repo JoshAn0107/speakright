@@ -300,6 +300,8 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
     }
   };
 
+  const continuousSummary = progress?.continuous_summary;
+
   const playAudio = (audioPath) => {
     if (audioPath) {
       const audioUrl = `/${audioPath}`;
@@ -388,6 +390,34 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
               单词与录音
             </h2>
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
+            {continuousSummary && (
+              <div className="card mb-4 bg-primary-50 border border-primary-200">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <div className="text-sm text-gray-600">连读测试 · 整段成绩</div>
+                    <div className="text-3xl font-bold text-primary-700">
+                      {continuousSummary.scoring ? '评分中…' : `${(continuousSummary.pronunciation_score ?? 0).toFixed ? continuousSummary.pronunciation_score.toFixed(0) : continuousSummary.pronunciation_score}分`}
+                      {continuousSummary.grade && <span className="text-base text-gray-500 ml-2">（{continuousSummary.grade}）</span>}
+                    </div>
+                    {continuousSummary.words_total != null && (
+                      <div className="text-sm text-gray-600 mt-1">
+                        读到 {continuousSummary.words_read}/{continuousSummary.words_total} · 完整度 {continuousSummary.completeness_score?.toFixed?.(0)}% · 流利度 {continuousSummary.fluency_score?.toFixed?.(0)}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => playAudio(continuousSummary.audio_file_path)}
+                    className="btn-primary px-5 py-2"
+                  >
+                    ▶ 播放整段朗读
+                  </button>
+                </div>
+                {continuousSummary.feedback && (
+                  <p className="text-sm text-gray-700 mt-3">{continuousSummary.feedback}</p>
+                )}
+              </div>
+            )}
+            
               {progress.words?.map((word) => {
                 const submission = getSubmissionForWord(word.word_text);
                 const hasReview = submission && submission.teacher_feedback;
@@ -411,6 +441,9 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                           {word.submitted && <CheckCircle className="w-4 h-4 text-green-600" />}
                           {hasReview && <Award className="w-4 h-4 text-blue-600" />}
                         </div>
+                        {word.error === '漏读' && (
+                          <div className="text-sm text-red-600 font-medium">漏读</div>
+                        )}
                         {word.score && (
                           <p className="text-sm text-gray-600 mt-1">
                             得分： <span className="font-medium">{word.score}</span>
