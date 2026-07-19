@@ -5,11 +5,16 @@ import RecordingInterface from './RecordingInterface';
 import assignmentService from '../../services/assignmentService';
 import studentService from '../../services/studentService';
 import ContinuousTest from './ContinuousTest';
+import ErrorBoundary from '../Common/ErrorBoundary';
 
 function AssignmentPractice({ assignment, onBack }) {
   // 连读测试模式走独立流程
   if (assignment.mode === 'continuous') {
-    return <ContinuousTest assignment={assignment} onBack={onBack} />;
+    return (
+      <ErrorBoundary>
+        <ContinuousTest assignment={assignment} onBack={onBack} />
+      </ErrorBoundary>
+    );
   }
 
   const [assignmentDetails, setAssignmentDetails] = useState(null);

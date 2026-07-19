@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Users, CheckCircle, Clock, TrendingUp, Volume2, Eye, MessageSquare, Award, ChevronRight } from 'lucide-react';
 import Navbar from '../Common/Navbar';
+import ErrorBoundary from '../Common/ErrorBoundary';
 import assignmentService from '../../services/assignmentService';
 import teacherService from '../../services/teacherService';
 
@@ -72,12 +73,14 @@ function AssignmentProgress({ assignment, onBack }) {
   // If viewing student details
   if (selectedStudent && studentDetails) {
     return (
+      <ErrorBoundary>
       <StudentDetailView
         assignment={assignment}
         studentDetails={studentDetails}
         onBack={handleBackToProgress}
         onFeedbackSubmitted={handleFeedbackSubmitted}
       />
+      </ErrorBoundary>
     );
   }
 
@@ -410,7 +413,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                   <div>
                     <div className="text-sm text-gray-600">连读测试 · 整段成绩</div>
                     <div className="text-3xl font-bold text-primary-700">
-                      {continuousSummary.scoring ? '评分中…' : `${(continuousSummary.pronunciation_score ?? 0).toFixed ? continuousSummary.pronunciation_score.toFixed(0) : continuousSummary.pronunciation_score}分`}
+                      {continuousSummary.scoring || continuousSummary.pronunciation_score == null ? '评分中…' : `${Number(continuousSummary.pronunciation_score).toFixed(0)}分`}
                       {continuousSummary.grade && <span className="text-base text-gray-500 ml-2">（{continuousSummary.grade}）</span>}
                     </div>
                     {continuousSummary.words_total != null && (

@@ -193,7 +193,7 @@ function ContinuousTest({ assignment, onBack }) {
             <Trophy className="w-14 h-14 text-green-600 mx-auto mb-3" />
             <h2 className="text-2xl font-bold text-gray-900 mb-1">连读测试完成</h2>
             <p className="text-4xl font-bold text-primary-700 my-2">
-              {result.pronunciation_score?.toFixed(0)}
+              {Number(result.pronunciation_score ?? 0).toFixed(0)}
               <span className="text-lg text-gray-500 ml-1">分（{result.grade}）</span>
             </p>
             <p className="text-gray-700">
@@ -231,7 +231,7 @@ function ContinuousTest({ assignment, onBack }) {
                 >
                   <div className="font-medium text-gray-900 truncate">{w.word}</div>
                   <div className={`text-sm font-bold ${w.error === '漏读' ? 'text-red-600' : 'text-gray-700'}`}>
-                    {w.error === '漏读' ? '漏读' : `${w.score.toFixed(0)}分`}
+                    {w.error === '漏读' ? '漏读' : `${Number(w.score ?? 0).toFixed(0)}分`}
                   </div>
                 </div>
               ))}
