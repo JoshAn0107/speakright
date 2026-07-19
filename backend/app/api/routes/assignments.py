@@ -674,6 +674,39 @@ def get_assignment_progress(
     return student_progress
 
 
+@router.post("/teacher/assignments/{assignment_id}/students/{student_id}/word-feedback")
+def submit_word_feedback(
+    assignment_id: int,
+    student_id: int,
+    word_text: str,
+    feedback_text: str = "",
+    grade: str = "",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_teacher)
+):
+    """Per-word teacher feedback — works for continuous takes where all
+    words share one recording (recording-level feedback would overwrite)."""
+    assignment = db.query(Assignment).filter(
+        Assignment.id == assignment_id,
+        Assignment.teacher_id == current_user.id
+    ).first()
+    if not assignment:
+        raise HTTPException(status_code=404, detail="未找到作业")
+
+    sub = db.query(AssignmentSubmission).filter(
+        AssignmentSubmission.assignment_id == assignment_id,
+        AssignmentSubmission.student_id == student_id,
+        AssignmentSubmission.word_text == word_text
+    ).order_by(AssignmentSubmission.id.desc()).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="该学生尚未提交这个单词")
+
+    sub.teacher_feedback = feedback_text.strip() or None
+    sub.teacher_grade = grade.strip() or None
+    db.commit()
+    return {"message": "点评已保存", "word_text": word_text}
+
+
 @router.get("/teacher/assignments/{assignment_id}/students/{student_id}/progress")
 def get_student_progress_for_teacher(
     assignment_id: int,
@@ -746,7 +779,9 @@ def get_student_progress_for_teacher(
             "order_index": word.order_index,
             "submitted": submission is not None,
             "recording_id": submission.recording_id if submission else None,
-            "submitted_at": submission.submitted_at if submission else None
+            "submitted_at": submission.submitted_at if submission else None,
+            "teacher_feedback": submission.teacher_feedback if submission else None,
+            "teacher_grade": submission.teacher_grade if submission else None
         }
 
         if mode == "continuous":
@@ -956,13 +991,29 @@ def get_continuous_result(
     if scores.get("error"):
         return {"status": "failed", "message": "这次没评好，可以重新测试，或等老师人工评分"}
 
+    fb_map = {
+        x.word_text: (x.teacher_feedback, x.teacher_grade)
+        for x in db.query(AssignmentSubmission).filter(
+            AssignmentSubmission.assignment_id == assignment_id,
+            AssignmentSubmission.student_id == current_user.id
+        ).all()
+        if x.teacher_feedback or x.teacher_grade
+    }
+    per_word = []
+    for w in scores.get("per_word", []):
+        w = dict(w)
+        fb = fb_map.get(w.get("word"))
+        if fb:
+            w["teacher_feedback"], w["teacher_grade"] = fb
+        per_word.append(w)
+
     return {
         "status": "done",
         "recording_id": rec.id,
         "pronunciation_score": scores.get("pronunciation_score"),
         "grade": rec.teacher_grade,
         "feedback": rec.teacher_feedback,
-        "per_word": scores.get("per_word", []),
+        "per_word": per_word,
         "words_read": scores.get("words_read"),
         "words_total": scores.get("words_total"),
         "completeness_score": scores.get("completeness_score"),
@@ -1116,7 +1167,9 @@ def get_student_assignment_progress(
             "order_index": word.order_index,
             "submitted": submission is not None,
             "recording_id": submission.recording_id if submission else None,
-            "submitted_at": submission.submitted_at if submission else None
+            "submitted_at": submission.submitted_at if submission else None,
+            "teacher_feedback": submission.teacher_feedback if submission else None,
+            "teacher_grade": submission.teacher_grade if submission else None
         }
 
         if mode == "continuous":

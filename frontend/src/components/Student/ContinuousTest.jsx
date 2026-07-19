@@ -232,7 +232,13 @@ function ContinuousTest({ assignment, onBack }) {
                   <div className="font-medium text-gray-900 truncate">{w.word}</div>
                   <div className={`text-sm font-bold ${w.error === '漏读' ? 'text-red-600' : 'text-gray-700'}`}>
                     {w.error === '漏读' ? '漏读' : `${Number(w.score ?? 0).toFixed(0)}分`}
+                    {w.teacher_grade && <span className="ml-1 text-blue-600">{w.teacher_grade}</span>}
                   </div>
+                  {w.teacher_feedback && (
+                    <div className="text-xs text-blue-700 mt-1 text-left bg-blue-50 rounded px-1.5 py-0.5">
+                      💬 {w.teacher_feedback}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

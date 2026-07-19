@@ -119,6 +119,15 @@ const assignmentService = {
     return response.data;
   },
 
+  submitWordFeedback: async (assignmentId, studentId, wordText, feedbackText, grade) => {
+    const response = await api.post(
+      `/api/assignments/teacher/assignments/${assignmentId}/students/${studentId}/word-feedback`,
+      null,
+      { params: { word_text: wordText, feedback_text: feedbackText, grade } }
+    );
+    return response.data;
+  },
+
   getStudentProgressForTeacher: async (assignmentId, studentId) => {
     const response = await api.get(`/api/assignments/teacher/assignments/${assignmentId}/students/${studentId}/progress`);
     return response.data;

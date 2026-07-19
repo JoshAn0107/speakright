@@ -292,7 +292,12 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
   const handleSelectWord = (word) => {
     const submission = getSubmissionForWord(word.word_text);
     setSelectedWord(word);
-    if (submission) {
+    if (continuousSummary) {
+      // 连读模式：点评是逐词的，从该词已有点评预填
+      setFeedbackText(word.teacher_feedback || '');
+      setGrade(word.teacher_grade || '');
+      setFlagForPractice(false);
+    } else if (submission) {
       setFeedbackText(submission.teacher_feedback || submission.automated_feedback || '');
       setGrade(submission.teacher_grade || submission.automated_grade || '');
       setFlagForPractice(submission.flag_for_practice || false);
@@ -369,21 +374,33 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
 
   const handleSubmitFeedback = async (e) => {
     e.preventDefault();
-    const submission = getSubmissionForWord(selectedWord.word_text);
-    const recordingId = submission?.id ?? selectedWord.recording_id ?? continuousSummary?.recording_id;
-    if (!recordingId) {
-      alert('未找到该单词的录音');
-      return;
-    }
 
     setSubmitting(true);
     try {
-      await teacherService.submitFeedback(
-        recordingId,
-        feedbackText,
-        grade,
-        flagForPractice
-      );
+      if (continuousSummary) {
+        // 连读模式：点评存到这个词上，不覆盖整段
+        await assignmentService.submitWordFeedback(
+          assignment.id,
+          studentDetails.studentInfo.student_id,
+          selectedWord.word_text,
+          feedbackText,
+          grade
+        );
+      } else {
+        const submission = getSubmissionForWord(selectedWord.word_text);
+        const recordingId = submission?.id ?? selectedWord.recording_id;
+        if (!recordingId) {
+          alert('未找到该单词的录音');
+          setSubmitting(false);
+          return;
+        }
+        await teacherService.submitFeedback(
+          recordingId,
+          feedbackText,
+          grade,
+          flagForPractice
+        );
+      }
       alert('反馈提交成功！');
       onFeedbackSubmitted();
       setSelectedWord(null);
@@ -515,6 +532,9 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                         </div>
                         {word.error === '漏读' && (
                           <div className="text-sm text-red-600 font-medium">漏读</div>
+                        )}
+                        {word.teacher_feedback && (
+                          <div className="text-xs text-blue-600 mt-0.5">💬 已点评</div>
                         )}
                         {word.score && (
                           <p className="text-sm text-gray-600 mt-1">

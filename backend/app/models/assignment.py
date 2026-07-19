@@ -101,6 +101,8 @@ class AssignmentSubmission(Base):
     student_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     word_text = Column(String(100), nullable=False)
     recording_id = Column(Integer, ForeignKey("recordings.id", ondelete="CASCADE"), nullable=True)
+    teacher_feedback = Column(Text, nullable=True)   # per-word feedback (continuous takes share one recording)
+    teacher_grade = Column(String(5), nullable=True)
     submitted_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
