@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Users, CheckCircle, Clock, TrendingUp, Volume2, Eye, MessageSquare, Award, ChevronRight } from 'lucide-react';
 import Navbar from '../Common/Navbar';
 import assignmentService from '../../services/assignmentService';
@@ -302,21 +302,35 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
 
   const continuousSummary = progress?.continuous_summary;
 
+  // 单例播放器：再次点击先停掉上一次，避免两段声音叠播
+  const audioRef = useRef(null);
   const playAudio = (audioPath) => {
-    if (audioPath) {
-      const audioUrl = `/${audioPath}`;
-      const audio = new Audio(audioUrl);
-      audio.play().catch(err => {
-        console.error('Error playing audio:', err);
-        alert('无法播放音频文件');
-      });
+    if (!audioPath) return;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
+    const audio = new Audio(`/${audioPath.replace(/^\//, '')}`);
+    audioRef.current = audio;
+    audio.play().catch(err => {
+      console.error('Error playing audio:', err);
+      alert('无法播放音频文件（可能还在加载，请稍后再试）');
+    });
+  };
+  useEffect(() => () => audioRef.current && audioRef.current.pause(), []);
+
+  // 连读模式：单个词没有独立录音，回退到整段录音
+  const getAudioForWord = (wordText) => {
+    const sub = getSubmissionForWord(wordText);
+    if (sub?.audio_file_path) return sub.audio_file_path;
+    return continuousSummary?.audio_file_path || null;
   };
 
   const handleSubmitFeedback = async (e) => {
     e.preventDefault();
     const submission = getSubmissionForWord(selectedWord.word_text);
-    if (!submission) {
+    const recordingId = submission?.id ?? selectedWord.recording_id ?? continuousSummary?.recording_id;
+    if (!recordingId) {
       alert('未找到该单词的录音');
       return;
     }
@@ -324,7 +338,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
     setSubmitting(true);
     try {
       await teacherService.submitFeedback(
-        submission.id,
+        recordingId,
         feedbackText,
         grade,
         flagForPractice
@@ -454,7 +468,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            playAudio(submission.audio_file_path);
+                            playAudio(getAudioForWord(word.word_text));
                           }}
                           className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
                         >
@@ -488,7 +502,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                       <h3 className="font-semibold mb-3">学生录音</h3>
                       <button
                         type="button"
-                        onClick={() => playAudio(getSubmissionForWord(selectedWord.word_text)?.audio_file_path)}
+                        onClick={() => playAudio(getAudioForWord(selectedWord.word_text))}
                         className="btn-primary flex items-center"
                       >
                         <Volume2 className="w-5 h-5 mr-2" />
