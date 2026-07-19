@@ -754,6 +754,8 @@ def get_student_progress_for_teacher(
             if pw:
                 word_info["score"] = pw.get("score")
                 word_info["error"] = pw.get("error")
+                word_info["offset_ms"] = pw.get("offset_ms")
+                word_info["end_ms"] = pw.get("end_ms")
         elif submission and submission.recording_id:
             recording = db.query(Recording).filter(Recording.id == submission.recording_id).first()
             if recording and recording.automated_scores:
@@ -1122,6 +1124,8 @@ def get_student_assignment_progress(
             if pw:
                 word_info["score"] = pw.get("score")
                 word_info["error"] = pw.get("error")
+                word_info["offset_ms"] = pw.get("offset_ms")
+                word_info["end_ms"] = pw.get("end_ms")
         elif submission and submission.recording_id:
             recording = db.query(Recording).filter(Recording.id == submission.recording_id).first()
             if recording and recording.automated_scores:

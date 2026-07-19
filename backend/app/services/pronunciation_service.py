@@ -692,11 +692,24 @@ class PronunciationService:
                     pr = speechsdk.PronunciationAssessmentResult(evt.result)
                     if pr.fluency_score is not None:
                         fluency_parts.append(float(pr.fluency_score))
-                    for w in pr.words:
+                    # word timing comes from the detailed JSON (ticks of 100ns)
+                    timing = []
+                    try:
+                        raw = evt.result.properties.get(
+                            speechsdk.PropertyId.SpeechServiceResponse_JsonResult
+                        )
+                        jwords = json.loads(raw).get("NBest", [{}])[0].get("Words", [])
+                        timing = [(jw.get("Offset"), jw.get("Duration")) for jw in jwords]
+                    except Exception:
+                        timing = []
+                    for i, w in enumerate(pr.words):
+                        off, dur = timing[i] if i < len(timing) else (None, None)
                         azure_words.append({
                             "word": w.word,
                             "accuracy_score": w.accuracy_score,
                             "error_type": getattr(w, "error_type", None),
+                            "offset_ms": int(off / 10000) if off is not None else None,
+                            "end_ms": int((off + dur) / 10000) if off is not None and dur is not None else None,
                         })
                 except Exception as e:
                     print(f"PA parse error (segment): {e}")
@@ -737,12 +750,16 @@ class PronunciationService:
                 etypes = {(w.get("error_type") or "None") for w in found_seq}
                 accs = [float(w.get("accuracy_score") or 0) for w in found_seq]
                 mean_acc = round(sum(accs) / len(accs), 1) if accs else 0
+                seg_offset = found_seq[0].get("offset_ms")
+                seg_end = found_seq[-1].get("end_ms")
                 if etypes == {"Omission"}:
                     per_word.append({"word": ref, "score": 0, "error": "漏读"})
                 elif "Mispronunciation" in etypes or "Omission" in etypes:
-                    per_word.append({"word": ref, "score": mean_acc, "error": "发音错误"})
+                    per_word.append({"word": ref, "score": mean_acc, "error": "发音错误",
+                                     "offset_ms": seg_offset, "end_ms": seg_end})
                 else:
-                    per_word.append({"word": ref, "score": mean_acc, "error": None})
+                    per_word.append({"word": ref, "score": mean_acc, "error": None,
+                                     "offset_ms": seg_offset, "end_ms": seg_end})
 
             read_count = sum(1 for w in per_word if w["error"] != "漏读")
             accuracy_overall = sum(w["score"] for w in per_word) / len(per_word) if per_word else 0

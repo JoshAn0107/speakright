@@ -305,20 +305,58 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
 
   const continuousSummary = progress?.continuous_summary;
 
-  // 单例播放器：再次点击先停掉上一次，避免两段声音叠播
+  // 可见的原生播放器：状态一目了然（进度/音量/暂停），兼容性最好
   const audioRef = useRef(null);
-  const playAudio = (audioPath) => {
+  const segmentStopRef = useRef(null);
+  const [playerSrc, setPlayerSrc] = useState(null);
+  const [playingLabel, setPlayingLabel] = useState('');
+
+  const ensureSrc = (audioPath) => {
+    const url = `/${(audioPath || '').replace(/^\//, '')}`;
+    if (playerSrc !== url) setPlayerSrc(url);
+    return url;
+  };
+
+  const playAudio = (audioPath, label = '') => {
     if (!audioPath) return;
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+    ensureSrc(audioPath);
+    setPlayingLabel(label);
+    segmentStopRef.current = null; // 整段播放，不自动停
+    setTimeout(() => {
+      const el = audioRef.current;
+      if (!el) return;
+      el.currentTime = 0;
+      el.play().catch((err) => console.error('play failed:', err));
+    }, 50);
+  };
+
+  // 只听某个词：跳到该词时间戳，播完该词自动暂停
+  const playWordSegment = (word) => {
+    const path = getAudioForWord(word.word_text);
+    if (!path) return;
+    if (word.offset_ms == null) {
+      playAudio(path, word.word_text);
+      return;
     }
-    const audio = new Audio(`/${audioPath.replace(/^\//, '')}`);
-    audioRef.current = audio;
-    audio.play().catch(err => {
-      console.error('Error playing audio:', err);
-      alert('无法播放音频文件（可能还在加载，请稍后再试）');
-    });
+    ensureSrc(path);
+    setPlayingLabel(word.word_text);
+    const startSec = Math.max(0, word.offset_ms / 1000 - 0.15);
+    const endSec = (word.end_ms != null ? word.end_ms / 1000 : startSec + 2) + 0.25;
+    segmentStopRef.current = endSec;
+    setTimeout(() => {
+      const el = audioRef.current;
+      if (!el) return;
+      el.currentTime = startSec;
+      el.play().catch((err) => console.error('play failed:', err));
+    }, 50);
+  };
+
+  const onTimeUpdate = () => {
+    const el = audioRef.current;
+    if (el && segmentStopRef.current != null && el.currentTime >= segmentStopRef.current) {
+      el.pause();
+      segmentStopRef.current = null;
+    }
   };
   useEffect(() => () => audioRef.current && audioRef.current.pause(), []);
 
@@ -407,6 +445,23 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
               单词与录音
             </h2>
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
+            {playerSrc && (
+              <div className="card mb-4 sticky top-0 z-20 bg-white shadow-md">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600 whitespace-nowrap">
+                    ▶ {playingLabel || '播放器'}
+                  </span>
+                  <audio
+                    ref={audioRef}
+                    src={playerSrc}
+                    controls
+                    preload="auto"
+                    onTimeUpdate={onTimeUpdate}
+                    className="w-full h-10"
+                  />
+                </div>
+              </div>
+            )}
             {continuousSummary && (
               <div className="card mb-4 bg-primary-50 border border-primary-200">
                 <div className="flex items-center justify-between flex-wrap gap-3">
@@ -423,7 +478,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                     )}
                   </div>
                   <button
-                    onClick={() => playAudio(continuousSummary.audio_file_path)}
+                    onClick={() => playAudio(continuousSummary.audio_file_path, '整段朗读')}
                     className="btn-primary px-5 py-2"
                   >
                     ▶ 播放整段朗读
@@ -471,7 +526,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            playAudio(getAudioForWord(word.word_text));
+                            playWordSegment(word);
                           }}
                           className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
                         >
@@ -505,7 +560,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                       <h3 className="font-semibold mb-3">学生录音</h3>
                       <button
                         type="button"
-                        onClick={() => playAudio(getAudioForWord(selectedWord.word_text))}
+                        onClick={() => playWordSegment(selectedWord)}
                         className="btn-primary flex items-center"
                       >
                         <Volume2 className="w-5 h-5 mr-2" />
