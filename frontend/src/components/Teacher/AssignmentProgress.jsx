@@ -316,6 +316,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
   const segmentStopRef = useRef(null);
   const [playingLabel, setPlayingLabel] = useState('');
   const [hasSrc, setHasSrc] = useState(false);
+  const [playerError, setPlayerError] = useState('');
 
   const startPlayback = (audioPath, startSec, stopSec, label) => {
     const el = audioRef.current;
@@ -324,33 +325,47 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
     const url = base.endsWith('.mp3') ? base : `${base}.mp3`;
 
     setPlayingLabel(label);
+    setPlayerError('');
     setHasSrc(true);
     segmentStopRef.current = stopSec;
 
-    const seekAndPlay = () => {
-      try { el.currentTime = startSec; } catch { /* not seekable yet */ }
-      el.play().catch((err) => console.error('play failed:', err));
+    const reportPlayError = (err) => {
+      console.error('play failed:', err);
+      setPlayerError(`播放失败：${err?.name || ''} ${err?.message || ''}`.trim());
     };
 
     const currentUrl = el.getAttribute('src') || '';
-    if (currentUrl.endsWith(url)) {
+    if (currentUrl.endsWith(url) || currentUrl.endsWith(base)) {
+      // 同一文件：直接定位播放（同步调用，保住移动端手势授权）
       el.pause();
-      seekAndPlay();
+      try { el.currentTime = startSec; } catch { /* ignore */ }
+      el.play().catch(reportPlayError);
       return;
     }
+
     el.pause();
     el.onerror = () => {
-      // mp3 还没生成 → 回退原始文件（只回退一次）
       if ((el.getAttribute('src') || '').endsWith('.mp3')) {
-        el.onerror = null;
+        // mp3 还没生成 → 回退原始文件
+        el.onerror = () => setPlayerError('音频加载失败（原始文件也无法加载），请刷新重试');
         el.src = base;
-        el.onloadedmetadata = seekAndPlay;
         el.load();
+        el.play().catch(reportPlayError);
+        el.onloadedmetadata = () => {
+          if (startSec > 0) { try { el.currentTime = startSec; } catch { /* ignore */ } }
+        };
+      } else {
+        setPlayerError('音频加载失败，请刷新重试');
       }
     };
     el.src = url;
-    el.onloadedmetadata = seekAndPlay;
     el.load();
+    // 关键：play() 必须在点击的同步调用栈里发起（iPad/Safari 的自动播放策略），
+    // 数据到达后会自动开始；时间戳定位等元数据就绪后再跳
+    el.play().catch(reportPlayError);
+    el.onloadedmetadata = () => {
+      if (startSec > 0) { try { el.currentTime = startSec; } catch { /* ignore */ } }
+    };
   };
 
   const playAudio = (audioPath, label = '') => startPlayback(audioPath, 0, null, label);
@@ -486,6 +501,9 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                   className="w-full h-10"
                 />
               </div>
+              {playerError && (
+                <p className="text-xs text-red-600 mt-1">{playerError}</p>
+              )}
             </div>
             {continuousSummary && (
               <div className="card mb-4 bg-primary-50 border border-primary-200">
