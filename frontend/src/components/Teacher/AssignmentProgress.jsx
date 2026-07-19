@@ -73,8 +73,9 @@ function AssignmentProgress({ assignment, onBack }) {
   // If viewing student details
   if (selectedStudent && studentDetails) {
     return (
-      <ErrorBoundary>
+      <ErrorBoundary key={selectedStudent}>
       <StudentDetailView
+        key={selectedStudent}
         assignment={assignment}
         studentDetails={studentDetails}
         onBack={handleBackToProgress}
@@ -310,41 +311,50 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
 
   const continuousSummary = progress?.continuous_summary;
 
-  // 可见的原生播放器：状态一目了然（进度/音量/暂停），兼容性最好
+  // 可见播放器：命令式控制（换源→等加载→定位→播放），无竞态
   const audioRef = useRef(null);
   const segmentStopRef = useRef(null);
-  const [playerSrc, setPlayerSrc] = useState(null);
   const [playingLabel, setPlayingLabel] = useState('');
+  const [hasSrc, setHasSrc] = useState(false);
 
-  // 优先加载压缩版（大陆流量下 wav 太大拉不动），失败回退原文件
-  const ensureSrc = (audioPath) => {
-    const base = `/${(audioPath || '').replace(/^\//, '')}`;
+  const startPlayback = (audioPath, startSec, stopSec, label) => {
+    const el = audioRef.current;
+    if (!el || !audioPath) return;
+    const base = `/${audioPath.replace(/^\//, '')}`;
     const url = base.endsWith('.mp3') ? base : `${base}.mp3`;
-    if (playerSrc !== url) setPlayerSrc(url);
-    return url;
-  };
 
-  const onAudioError = () => {
-    // mp3 还没生成 → 回退到原始 wav
-    if (playerSrc && playerSrc.endsWith('.mp3')) {
-      setPlayerSrc(playerSrc.slice(0, -4));
-    }
-  };
-
-  const playAudio = (audioPath, label = '') => {
-    if (!audioPath) return;
-    ensureSrc(audioPath);
     setPlayingLabel(label);
-    segmentStopRef.current = null; // 整段播放，不自动停
-    setTimeout(() => {
-      const el = audioRef.current;
-      if (!el) return;
-      el.currentTime = 0;
+    setHasSrc(true);
+    segmentStopRef.current = stopSec;
+
+    const seekAndPlay = () => {
+      try { el.currentTime = startSec; } catch { /* not seekable yet */ }
       el.play().catch((err) => console.error('play failed:', err));
-    }, 50);
+    };
+
+    const currentUrl = el.getAttribute('src') || '';
+    if (currentUrl.endsWith(url)) {
+      el.pause();
+      seekAndPlay();
+      return;
+    }
+    el.pause();
+    el.onerror = () => {
+      // mp3 还没生成 → 回退原始文件（只回退一次）
+      if ((el.getAttribute('src') || '').endsWith('.mp3')) {
+        el.onerror = null;
+        el.src = base;
+        el.onloadedmetadata = seekAndPlay;
+        el.load();
+      }
+    };
+    el.src = url;
+    el.onloadedmetadata = seekAndPlay;
+    el.load();
   };
 
-  // 只听某个词：跳到该词时间戳，播完该词自动暂停
+  const playAudio = (audioPath, label = '') => startPlayback(audioPath, 0, null, label);
+
   const playWordSegment = (word) => {
     const path = getAudioForWord(word.word_text);
     if (!path) return;
@@ -352,17 +362,9 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
       playAudio(path, word.word_text);
       return;
     }
-    ensureSrc(path);
-    setPlayingLabel(word.word_text);
     const startSec = Math.max(0, word.offset_ms / 1000 - 0.15);
     const endSec = (word.end_ms != null ? word.end_ms / 1000 : startSec + 2) + 0.25;
-    segmentStopRef.current = endSec;
-    setTimeout(() => {
-      const el = audioRef.current;
-      if (!el) return;
-      el.currentTime = startSec;
-      el.play().catch((err) => console.error('play failed:', err));
-    }, 50);
+    startPlayback(path, startSec, endSec, word.word_text);
   };
 
   const onTimeUpdate = () => {
@@ -471,24 +473,20 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
               单词与录音
             </h2>
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
-            {playerSrc && (
-              <div className="card mb-4 sticky top-0 z-20 bg-white shadow-md">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600 whitespace-nowrap">
-                    ▶ {playingLabel || '播放器'}
-                  </span>
-                  <audio
-                    ref={audioRef}
-                    src={playerSrc}
-                    controls
-                    preload="auto"
-                    onTimeUpdate={onTimeUpdate}
-                    onError={onAudioError}
-                    className="w-full h-10"
-                  />
-                </div>
+            <div className={`card mb-4 sticky top-0 z-20 bg-white shadow-md ${hasSrc ? '' : 'hidden'}`}>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600 whitespace-nowrap">
+                  ▶ {playingLabel || '播放器'}
+                </span>
+                <audio
+                  ref={audioRef}
+                  controls
+                  preload="auto"
+                  onTimeUpdate={onTimeUpdate}
+                  className="w-full h-10"
+                />
               </div>
-            )}
+            </div>
             {continuousSummary && (
               <div className="card mb-4 bg-primary-50 border border-primary-200">
                 <div className="flex items-center justify-between flex-wrap gap-3">
