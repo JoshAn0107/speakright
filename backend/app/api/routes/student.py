@@ -161,6 +161,9 @@ async def submit_recording(
             detail=f"数据库错误：{str(e)}"
         )
 
+    from app.services.audio_compress import compress_async
+    compress_async(str(file_path))
+
     # shadow-score with the self-hosted ML model (fire-and-forget)
     try:
         submit_shadow(recording.id, word_text, str(file_path), assessment_result)

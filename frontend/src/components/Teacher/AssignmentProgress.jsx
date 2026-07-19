@@ -316,10 +316,19 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
   const [playerSrc, setPlayerSrc] = useState(null);
   const [playingLabel, setPlayingLabel] = useState('');
 
+  // 优先加载压缩版（大陆流量下 wav 太大拉不动），失败回退原文件
   const ensureSrc = (audioPath) => {
-    const url = `/${(audioPath || '').replace(/^\//, '')}`;
+    const base = `/${(audioPath || '').replace(/^\//, '')}`;
+    const url = base.endsWith('.mp3') ? base : `${base}.mp3`;
     if (playerSrc !== url) setPlayerSrc(url);
     return url;
+  };
+
+  const onAudioError = () => {
+    // mp3 还没生成 → 回退到原始 wav
+    if (playerSrc && playerSrc.endsWith('.mp3')) {
+      setPlayerSrc(playerSrc.slice(0, -4));
+    }
   };
 
   const playAudio = (audioPath, label = '') => {
@@ -474,6 +483,7 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                     controls
                     preload="auto"
                     onTimeUpdate={onTimeUpdate}
+                    onError={onAudioError}
                     className="w-full h-10"
                   />
                 </div>

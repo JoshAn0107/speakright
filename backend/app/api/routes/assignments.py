@@ -957,6 +957,9 @@ def submit_assignment_continuous(
         finally:
             session.close()
 
+    from app.services.audio_compress import compress_async
+    compress_async(str(file_path))
+
     import threading
     threading.Thread(target=score_in_background, daemon=True, name=f"continuous-score-{recording_id}").start()
 
