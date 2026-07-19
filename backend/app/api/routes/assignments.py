@@ -899,17 +899,29 @@ def submit_assignment_continuous(
     db.add(recording)
     db.flush()
 
-    # submissions recorded now so progress reflects completion immediately
+    # submissions recorded now so progress reflects completion immediately;
+    # carry the teacher's per-word feedback over so a retake doesn't erase it
+    old_feedback = {
+        x.word_text: (x.teacher_feedback, x.teacher_grade)
+        for x in db.query(AssignmentSubmission).filter(
+            AssignmentSubmission.assignment_id == assignment_id,
+            AssignmentSubmission.student_id == current_user.id
+        ).all()
+        if x.teacher_feedback or x.teacher_grade
+    }
     db.query(AssignmentSubmission).filter(
         AssignmentSubmission.assignment_id == assignment_id,
         AssignmentSubmission.student_id == current_user.id
     ).delete()
     for word in reference_words:
+        fb = old_feedback.get(word, (None, None))
         db.add(AssignmentSubmission(
             assignment_id=assignment_id,
             student_id=current_user.id,
             word_text=word,
-            recording_id=recording.id
+            recording_id=recording.id,
+            teacher_feedback=fb[0],
+            teacher_grade=fb[1]
         ))
     assignment_student.completed_at = datetime.utcnow()
     db.commit()
@@ -990,6 +1002,12 @@ def get_continuous_result(
     rec = sub.recording
     scores = rec.automated_scores or {}
     if rec.status == RecordingStatus.PENDING and not scores:
+        # scoring thread died (e.g. deploy restart mid-scoring) -> stuck take;
+        # after 10 minutes report failure so the student can redo instead of
+        # waiting forever
+        age = (datetime.utcnow() - rec.created_at.replace(tzinfo=None)).total_seconds() if rec.created_at else 0
+        if age > 600:
+            return {"status": "failed", "message": "这次评分中断了，请重新测试"}
         return {"status": "scoring", "message": "评分中，请稍后刷新"}
     if scores.get("error"):
         return {"status": "failed", "message": "这次没评好，可以重新测试，或等老师人工评分"}

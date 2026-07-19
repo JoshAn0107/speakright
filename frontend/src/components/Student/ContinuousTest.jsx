@@ -112,15 +112,14 @@ function ContinuousTest({ assignment, onBack }) {
 
     setPhase('recording');
     setTimeLeft(timeLimit);
+    const deadline = Date.now() + timeLimit * 1000;
     timerRef.current = setInterval(() => {
-      setTimeLeft((v) => {
-        if (v <= 1) {
-          finishRecording();
-          return 0;
-        }
-        return v - 1;
-      });
-    }, 1000);
+      const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setTimeLeft(left);
+      if (left <= 0) {
+        finishRecording(); // 到点自动交卷（幂等，有 stoppedRef 护栏）
+      }
+    }, 500);
   };
 
   const finishRecording = async () => {

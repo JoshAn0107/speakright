@@ -480,14 +480,6 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Word List */}
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <MessageSquare className="w-5 h-5 mr-2" />
-              单词与录音
-            </h2>
-            <div className="space-y-2 max-h-[600px] overflow-y-auto">
             <div className={`card mb-4 sticky top-0 z-20 bg-white shadow-md ${hasSrc ? '' : 'hidden'}`}>
               <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600 whitespace-nowrap">
@@ -532,7 +524,15 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
                 )}
               </div>
             )}
-            
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Word List */}
+          <div className="card">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <MessageSquare className="w-5 h-5 mr-2" />
+              单词与录音
+            </h2>
+            <div className="space-y-2 max-h-[600px] overflow-y-auto">
               {progress.words?.map((word) => {
                 const submission = getSubmissionForWord(word.word_text);
                 const hasReview = submission && submission.teacher_feedback;
