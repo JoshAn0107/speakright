@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowLeft, Users, CheckCircle, Clock, TrendingUp, Volume2, Eye, MessageSquare, Award, ChevronRight } from 'lucide-react';
 import Navbar from '../Common/Navbar';
 import ErrorBoundary from '../Common/ErrorBoundary';
@@ -286,9 +286,17 @@ function StudentDetailView({ assignment, studentDetails, onBack, onFeedbackSubmi
 
   const { progress, submissions, studentInfo } = studentDetails;
 
-  const getSubmissionForWord = (wordText) => {
-    return submissions.find(sub => sub.word_text === wordText);
-  };
+  // submissions 按最新在前排序；Map 只保留每个词的第一条（即最新一条），
+  // 查找从 O(n) 降为 O(1)，避免词表渲染时的 O(n²) 扫描
+  const submissionMap = useMemo(() => {
+    const m = new Map();
+    for (const sub of submissions) {
+      if (!m.has(sub.word_text)) m.set(sub.word_text, sub);
+    }
+    return m;
+  }, [submissions]);
+
+  const getSubmissionForWord = (wordText) => submissionMap.get(wordText);
 
   const handleSelectWord = (word) => {
     const submission = getSubmissionForWord(word.word_text);
