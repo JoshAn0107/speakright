@@ -74,6 +74,8 @@ class FeedbackService:
 
         # Generate detailed feedback
         feedback_parts = []
+        if assessment_result.get('fallback'):
+            feedback_parts.append("（备用评分：主评分服务繁忙，本次由本地模型评分，仅供参考）")
 
         # Prosody: point out stress/intonation problems explicitly
         prosody_score = assessment_result.get('prosody_score')

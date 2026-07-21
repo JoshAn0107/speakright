@@ -231,8 +231,19 @@ class PronunciationService:
                     "pronunciation_score": 0
                 }
             else:
+                # Azure cancelled (quota exceeded / service error) -> fall back
+                # to the self-hosted GOP model so scoring never fully stops
+                details = ""
+                if result.reason == speechsdk.ResultReason.Canceled:
+                    try:
+                        details = result.cancellation_details.error_details or ""
+                    except Exception:
+                        details = ""
+                fb = self._gop_fallback(converted_file_path, reference_text)
+                if fb:
+                    return fb
                 return {
-                    "error": f"语音识别失败：{result.reason}",
+                    "error": f"语音识别失败：{result.reason} {details[:100]}",
                     "pronunciation_score": 0
                 }
 
@@ -549,6 +560,21 @@ class PronunciationService:
         result["pronunciation_score"] = score
         return result
 
+    def _gop_fallback(self, wav_path: str, reference_text: str):
+        """Score with the self-hosted GOP model when Azure is unavailable."""
+        try:
+            from app.services.shadow_service import gop_assess_full
+            fb = gop_assess_full(wav_path, reference_text)
+            if not fb:
+                return None
+            # run the same strict layer; it degrades gracefully without prosody
+            fb = self._apply_strict_scoring(fb, reference_text)
+            fb["fallback"] = True
+            return fb
+        except Exception as e:
+            print(f"GOP fallback failed: {e}")
+            return None
+
     def _get_mock_assessment(self, reference_text: str) -> Dict:
         """
         Generate mock assessment data for development/testing
@@ -714,12 +740,29 @@ class PronunciationService:
                 except Exception as e:
                     print(f"PA parse error (segment): {e}")
 
+            cancel_info = {}
+            def on_canceled(evt):
+                d = evt.cancellation_details
+                if d and d.reason == speechsdk.CancellationReason.Error:
+                    cancel_info["error"] = d.error_details or "recognition canceled"
+                done.set()
             recognizer.recognized.connect(on_recognized)
             recognizer.session_stopped.connect(lambda evt: done.set())
-            recognizer.canceled.connect(lambda evt: done.set())
+            recognizer.canceled.connect(on_canceled)
             recognizer.start_continuous_recognition()
-            done.wait(timeout=240)
+            finished = done.wait(timeout=240)
             recognizer.stop_continuous_recognition()
+
+            # service-side failure (quota exceeded, timeout, network) — do NOT
+            # score an empty result as "everything omitted / 0 分"
+            if cancel_info.get("error"):
+                is_quota = "quota" in cancel_info["error"].lower() or "1007" in cancel_info["error"]
+                return {"error": ("配额不足" if is_quota else "语音服务错误") + "：" + cancel_info["error"][:120],
+                        "pronunciation_score": 0, "per_word": []}
+            if not finished:
+                return {"error": "语音识别超时", "pronunciation_score": 0, "per_word": []}
+            if not azure_words:
+                return {"error": "未识别到语音，请重新录音", "pronunciation_score": 0, "per_word": []}
 
             # map azure word results back onto the reference sequence;
             # a reference entry may be a multi-token phrase (well done, only child)

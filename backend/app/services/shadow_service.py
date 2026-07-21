@@ -25,6 +25,49 @@ SHADOW_ML_URL = os.getenv(
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "app.db")
 
 
+def gop_assess_full(wav_path: str, reference_text: str, timeout: float = 30.0):
+    """Full GOP assessment as a fallback scorer when Azure is unavailable.
+
+    Returns a dict shaped like the Azure pronunciation-service result (so the
+    strict-scoring layer and frontend need no changes), or None on failure.
+    """
+    try:
+        with open(wav_path, "rb") as f:
+            resp = requests.post(
+                SHADOW_ML_URL,
+                files={"audio_file": ("audio.wav", f, "audio/wav")},
+                data={"reference_text": reference_text},
+                timeout=timeout,
+            )
+        resp.raise_for_status()
+        nbest = (resp.json().get("NBest") or [{}])[0]
+        if not nbest or nbest.get("PronScore") is None:
+            return None
+        words = []
+        for w in nbest.get("Words", []):
+            words.append({
+                "word": w.get("Word"),
+                "accuracy_score": w.get("AccuracyScore"),
+                "error_type": w.get("ErrorType"),
+                "phonemes": [
+                    {"phoneme": p.get("Phoneme"), "accuracy_score": p.get("AccuracyScore")}
+                    for p in w.get("Phonemes", [])
+                ],
+            })
+        score = float(nbest.get("PronScore") or 0)
+        return {
+            "recognized_text": nbest.get("Display") or nbest.get("Lexical") or "",
+            "pronunciation_score": score,
+            "accuracy_score": nbest.get("AccuracyScore"),
+            "fluency_score": nbest.get("FluencyScore"),
+            "completeness_score": nbest.get("CompletenessScore"),
+            "words": words,
+            "scorer": "gop",  # marks this as the self-hosted fallback
+        }
+    except Exception:
+        return None
+
+
 def gop_transcribe_sync(wav_path: str, reference_text: str, timeout: float = 5.0):
     """Synchronous GOP scoring call, used as a live second opinion.
 
