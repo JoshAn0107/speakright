@@ -30,7 +30,7 @@ function ContinuousTest({ assignment, onBack }) {
     assignmentService.getContinuousResult(assignment.id).then((r) => {
       if (r.status === 'done') { setResult(r); setPhase('done'); }
       else if (r.status === 'scoring') { setPhase('submitted'); }
-      else if (r.status === 'failed') { setResult({ failed: true, message: r.message }); setPhase('done'); }
+      else if (r.status === 'failed') { setResult({ failed: true, message: r.message, per_word: r.per_word || [] }); setPhase('done'); }
     }).catch(() => {});
     return () => cleanup();
   }, [assignment.id]);
@@ -169,7 +169,19 @@ function ContinuousTest({ assignment, onBack }) {
             <div className="card">
               <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-gray-900 mb-2">这次没评好</h2>
-              <p className="text-gray-600 text-sm mb-6">{result.message || '可以重新测试，或等老师人工评分'}</p>
+              <p className="text-gray-600 text-sm mb-4">{result.message || '可以重新测试，或等老师人工评分'}</p>
+              {(result.per_word || []).some((w) => w.teacher_feedback || w.teacher_grade) && (
+                <div className="text-left bg-blue-50 rounded-lg p-3 mb-6">
+                  <div className="text-sm font-medium text-blue-700 mb-2">老师点评：</div>
+                  {(result.per_word || []).filter((w) => w.teacher_feedback || w.teacher_grade).map((w) => (
+                    <div key={w.word} className="text-sm text-gray-700 mb-1">
+                      <span className="font-medium">{w.word}</span>
+                      {w.teacher_grade && <span className="ml-1 text-blue-600">{w.teacher_grade}</span>}
+                      {w.teacher_feedback && <span className="ml-1">— {w.teacher_feedback}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-3">
                 <button onClick={() => { setResult(null); setPhase('ready'); }} className="flex-1 btn-secondary">
                   重新测试

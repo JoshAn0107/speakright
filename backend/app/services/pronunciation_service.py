@@ -573,7 +573,9 @@ class PronunciationService:
                 return None
             converted = self._convert_to_azure_format(audio_file_path)
             try:
-                r = xf_ise_service.assess_words(converted, reference_words)
+                r = xf_ise_service.assess_via_node(converted, reference_words)
+                if r is None:
+                    r = xf_ise_service.assess_words(converted, reference_words)
             finally:
                 try:
                     if converted and converted != audio_file_path and os.path.exists(converted):
@@ -616,7 +618,10 @@ class PronunciationService:
                 return None
             converted = self._convert_to_azure_format(audio_file_path)
             try:
-                r = xf_ise_service.assess_word(converted, reference_text)
+                # 优先境内评分节点（低延迟）；无节点或失败再本地直连讯飞
+                r = xf_ise_service.assess_via_node(converted, [reference_text])
+                if r is None:
+                    r = xf_ise_service.assess_word(converted, reference_text)
             finally:
                 try:
                     if converted and converted != audio_file_path and os.path.exists(converted):
@@ -732,11 +737,10 @@ class PronunciationService:
         """
         reference_text = " ".join(reference_words)
 
-        # 讯飞优先（≤20词，长音频跨网络不稳）；失败或超长回退 Azure
-        if len(reference_words) <= 20:
-            xf = self._try_xfyun_continuous(reference_words, audio_file_path)
-            if xf is not None:
-                return xf
+        # 讯飞优先（经境内节点，长连读也稳）；失败回退 Azure
+        xf = self._try_xfyun_continuous(reference_words, audio_file_path)
+        if xf is not None:
+            return xf
 
         if not self.enabled:
             return {"error": "未配置语音服务", "pronunciation_score": 0, "per_word": []}

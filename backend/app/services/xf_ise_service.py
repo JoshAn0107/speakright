@@ -201,3 +201,54 @@ def assess_words(wav_path, reference_words):
     except Exception as e:
         print("XF ISE assess_words failed:", e)
         return None
+
+
+# ---- 境内评分节点转发 ----
+import requests as _requests
+
+def _node_url():
+    from app.core.config import settings
+    return getattr(settings, "SCORING_NODE_URL", None) or os.getenv("SCORING_NODE_URL")
+
+
+def _node_token():
+    from app.core.config import settings
+    return getattr(settings, "SCORING_NODE_TOKEN", None) or os.getenv("SCORING_NODE_TOKEN") or "sr-cn-2026-xfyun"
+
+
+def assess_via_node(wav_path, reference_words, poll_timeout=180):
+    """转发到境内评分节点（异步 job + 轮询，避免跨境长连接）。返回 dict 或 None。"""
+    url = _node_url()
+    if not url:
+        return None
+    base = url.rstrip("/")
+    hdr = {"X-Token": _node_token()}
+    try:
+        with open(wav_path, "rb") as f:
+            resp = _requests.post(
+                base + "/score", headers=hdr,
+                files={"audio_file": ("audio.wav", f, "audio/wav")},
+                data={"reference": "\n".join(reference_words)},
+                timeout=30,
+            )
+        resp.raise_for_status()
+        job_id = resp.json().get("job_id")
+        if not job_id:
+            return None
+        deadline = time.time() + poll_timeout
+        while time.time() < deadline:
+            time.sleep(3)
+            pr = _requests.get(base + f"/result/{job_id}", headers=hdr, timeout=15)
+            if pr.status_code != 200:
+                continue
+            j = pr.json()
+            if j.get("status") == "done":
+                return j["result"]
+            if j.get("status") == "error":
+                print(f"scoring node error: {j.get('result')}")
+                return None
+        print("scoring node poll timeout")
+        return None
+    except Exception as e:
+        print(f"scoring node failed, falling back: {e}")
+        return None

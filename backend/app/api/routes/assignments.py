@@ -1001,6 +1001,29 @@ def get_continuous_result(
     if not sub or not sub.recording:
         return {"status": "none"}
 
+    def _teacher_feedback_words():
+        """自动评分失败时也把老师逐词点评带给学生。"""
+        fb = {
+            x.word_text: (x.teacher_feedback, x.teacher_grade)
+            for x in db.query(AssignmentSubmission).filter(
+                AssignmentSubmission.assignment_id == assignment_id,
+                AssignmentSubmission.student_id == current_user.id
+            ).all()
+            if x.teacher_feedback or x.teacher_grade
+        }
+        if not fb:
+            return []
+        words = db.query(AssignmentWord).filter(
+            AssignmentWord.assignment_id == assignment_id
+        ).order_by(AssignmentWord.order_index).all()
+        out = []
+        for w in words:
+            f = fb.get(w.word_text)
+            out.append({"word": w.word_text,
+                        "teacher_feedback": f[0] if f else None,
+                        "teacher_grade": f[1] if f else None})
+        return out
+
     rec = sub.recording
     scores = rec.automated_scores or {}
     if rec.status == RecordingStatus.PENDING and not scores:
@@ -1009,10 +1032,12 @@ def get_continuous_result(
         # waiting forever
         age = (datetime.utcnow() - rec.created_at.replace(tzinfo=None)).total_seconds() if rec.created_at else 0
         if age > 600:
-            return {"status": "failed", "message": "这次评分中断了，请重新测试"}
+            return {"status": "failed", "message": "这次自动评分中断了，请重新测试",
+                    "per_word": _teacher_feedback_words()}
         return {"status": "scoring", "message": "评分中，请稍后刷新"}
     if scores.get("error"):
-        return {"status": "failed", "message": "这次没评好，可以重新测试，或等老师人工评分"}
+        return {"status": "failed", "message": "自动评分没成功，但可以看老师的点评，或重新测试",
+                "per_word": _teacher_feedback_words()}
 
     fb_map = {
         x.word_text: (x.teacher_feedback, x.teacher_grade)

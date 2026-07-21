@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # 影子/降级 ML 模型地址
     SHADOW_ML_URL: Optional[str] = None
 
+    # 境内评分节点
+    SCORING_NODE_URL: Optional[str] = None
+    SCORING_NODE_TOKEN: Optional[str] = None
+
     # File Storage
     UPLOAD_DIR: str = "uploads"
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
