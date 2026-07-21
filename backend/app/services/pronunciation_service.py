@@ -565,6 +565,49 @@ class PronunciationService:
         result["pronunciation_score"] = score
         return result
 
+    def _try_xfyun_continuous(self, reference_words, audio_file_path):
+        """连读多词评测（讯飞 read_word 多词）。返回连读结果 dict 或 None。"""
+        try:
+            from app.services import xf_ise_service
+            if not xf_ise_service.available():
+                return None
+            converted = self._convert_to_azure_format(audio_file_path)
+            try:
+                r = xf_ise_service.assess_words(converted, reference_words)
+            finally:
+                try:
+                    if converted and converted != audio_file_path and os.path.exists(converted):
+                        os.remove(converted)
+                except OSError:
+                    pass
+            if not r or not r.get("words"):
+                return None
+            # 组装成连读结果结构（对齐 assess_continuous_reading 输出）
+            heard = {w["word"].lower(): w for w in r["words"]}
+            per_word = []
+            for ref in reference_words:
+                w = heard.get(ref.lower())
+                if not w or w.get("error_type") == "Omission":
+                    per_word.append({"word": ref, "score": 0, "error": "漏读"})
+                else:
+                    sc = w.get("accuracy_score") or 0
+                    per_word.append({"word": ref, "score": sc,
+                                     "error": None if sc >= 60 else "发音错误"})
+            read = [p for p in per_word if p["error"] != "漏读"]
+            return {
+                "mode": "continuous", "scorer": "xfyun",
+                "pronunciation_score": r.get("pronunciation_score", 0),
+                "accuracy_score": r.get("accuracy_score"),
+                "completeness_score": round(len(read) / len(reference_words) * 100, 1) if reference_words else 0,
+                "fluency_score": None,
+                "recognized_text": r.get("recognized_text", ""),
+                "words_read": len(read), "words_total": len(reference_words),
+                "per_word": per_word,
+            }
+        except Exception as e:
+            print(f"xfyun continuous failed, falling back: {e}")
+            return None
+
     def _try_xfyun(self, audio_file_path: str, reference_text: str):
         """讯飞评测（主）。返回评分 dict；未配置/失败/乱读被拒时返回 None 走 Azure。"""
         try:
@@ -688,6 +731,13 @@ class PronunciationService:
         overall score plus a per-reference-word breakdown.
         """
         reference_text = " ".join(reference_words)
+
+        # 讯飞优先（≤20词，长音频跨网络不稳）；失败或超长回退 Azure
+        if len(reference_words) <= 20:
+            xf = self._try_xfyun_continuous(reference_words, audio_file_path)
+            if xf is not None:
+                return xf
+
         if not self.enabled:
             return {"error": "未配置语音服务", "pronunciation_score": 0, "per_word": []}
 

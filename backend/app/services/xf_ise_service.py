@@ -88,12 +88,15 @@ def _evaluate(wav_path, text, category):
                 last = i >= len(audio)
                 aus = 1 if first else (4 if last else 2)
                 first = False
-                ws.send(json.dumps({
-                    "business": {"cmd": "auw", "aus": aus, "aue": "raw"},
-                    "data": {"status": 2 if last else 1,
-                             "data": base64.b64encode(chunk).decode(),
-                             "data_type": 1, "encoding": "raw"},
-                }))
+                try:
+                    ws.send(json.dumps({
+                        "business": {"cmd": "auw", "aus": aus, "aue": "raw"},
+                        "data": {"status": 2 if last else 1,
+                                 "data": base64.b64encode(chunk).decode(),
+                                 "data_type": 1, "encoding": "raw"},
+                    }))
+                except Exception:
+                    return  # ws 已关闭（讯飞返回错误），停止发送
                 time.sleep(0.04)
         threading.Thread(target=send, daemon=True).start()
 
@@ -121,7 +124,7 @@ def _evaluate(wav_path, text, category):
         target=lambda: ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE}),
         daemon=True,
     ).start()
-    done.wait(timeout=25)
+    done.wait(timeout=120)
     if "error" in result:
         raise RuntimeError(result["error"])
     if "xml" not in result:
@@ -188,11 +191,13 @@ def assess_word(wav_path, word):
         return None
 
 
-def assess_sentence(wav_path, reference_words):
+def assess_words(wav_path, reference_words):
+    """连读多词评测：read_word 接受换行分隔的词表，逐词返回分数+漏读。"""
     if not available():
         return None
     try:
-        return _parse(_evaluate(wav_path, " ".join(reference_words), "read_sentence"))
+        text = "\n".join(reference_words)
+        return _parse(_evaluate(wav_path, text, "read_word"))
     except Exception as e:
-        print("XF ISE assess_sentence failed:", e)
+        print("XF ISE assess_words failed:", e)
         return None
