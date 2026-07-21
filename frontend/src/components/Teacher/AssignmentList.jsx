@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Calendar, Users, BookOpen, Trash2, BarChart3, AlertCircle, Home } from 'lucide-react';
+import { Plus, Calendar, Users, BookOpen, Trash2, BarChart3, AlertCircle, Home, Clock } from 'lucide-react';
 import Navbar from '../Common/Navbar';
 import CreateAssignment from './CreateAssignment';
 import AssignmentProgress from './AssignmentProgress';
@@ -9,6 +9,7 @@ function AssignmentList({ onBackToDashboard }) {
   const [view, setView] = useState('list'); // 'list', 'create', 'progress'
   const [assignments, setAssignments] = useState([]);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [editingDue, setEditingDue] = useState(null); // {id, value}
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -32,6 +33,25 @@ function AssignmentList({ onBackToDashboard }) {
       setAssignments([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toLocalInput = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const saveDueDate = async () => {
+    try {
+      await assignmentService.updateAssignment(editingDue.id, {
+        due_date: editingDue.value ? new Date(editingDue.value).toISOString() : null,
+      });
+      setEditingDue(null);
+      loadAssignments();
+    } catch (error) {
+      alert(error.response?.data?.detail || '修改截止日期失败');
     }
   };
 
@@ -199,6 +219,20 @@ function AssignmentList({ onBackToDashboard }) {
                       <div className="mt-4 text-xs text-gray-500">
                         创建于： {new Date(assignment.created_at).toLocaleDateString()}
                       </div>
+                      {editingDue?.id === assignment.id && (
+                        <div className="mt-3 flex items-center gap-2 flex-wrap">
+                          <span className="text-sm text-gray-700">截止日期：</span>
+                          <input
+                            type="datetime-local"
+                            value={editingDue.value}
+                            onChange={(e) => setEditingDue({ ...editingDue, value: e.target.value })}
+                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                          />
+                          <button onClick={saveDueDate} className="px-3 py-1.5 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700">保存</button>
+                          <button onClick={() => setEditingDue({ ...editingDue, value: '' })} className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700">清除</button>
+                          <button onClick={() => setEditingDue(null)} className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700">取消</button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2 ml-4">
@@ -209,6 +243,13 @@ function AssignmentList({ onBackToDashboard }) {
                       >
                         <BarChart3 className="w-4 h-4 mr-1" />
                         进度
+                      </button>
+                      <button
+                        onClick={() => setEditingDue({ id: assignment.id, value: toLocalInput(assignment.due_date) })}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="修改截止日期"
+                      >
+                        <Clock className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleDeleteAssignment(assignment.id)}

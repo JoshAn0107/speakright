@@ -181,7 +181,7 @@ function AssignmentProgress({ assignment, onBack }) {
                       平均分
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      分配日期
+                      最后提交
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       状态
@@ -239,7 +239,9 @@ function AssignmentProgress({ assignment, onBack }) {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(studentProgress.assigned_at).toLocaleDateString()}
+                        {studentProgress.last_submitted_at
+                          ? new Date(studentProgress.last_submitted_at).toLocaleString('zh-CN', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'})
+                          : '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {studentProgress.completed_at ? (
