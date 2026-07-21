@@ -223,11 +223,21 @@ def assess_via_node(wav_path, reference_words, poll_timeout=180):
         return None
     base = url.rstrip("/")
     hdr = {"X-Token": _node_token()}
+    # 压成 mp3 再跨境上传(1.5MB->~150KB,避免跨境大文件卡死)
+    import subprocess, tempfile
+    mp3 = None
     try:
-        with open(wav_path, "rb") as f:
+        fd, mp3 = tempfile.mkstemp(suffix=".mp3"); os.close(fd)
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav_path,
+                        "-ac", "1", "-b:a", "24k", mp3], check=True, timeout=60)
+        upload_path = mp3
+    except Exception:
+        upload_path = wav_path
+    try:
+        with open(upload_path, "rb") as f:
             resp = _requests.post(
                 base + "/score", headers=hdr,
-                files={"audio_file": ("audio.wav", f, "audio/wav")},
+                files={"audio_file": ("audio.mp3", f, "audio/mpeg")},
                 data={"reference": "\n".join(reference_words)},
                 timeout=30,
             )
@@ -252,3 +262,7 @@ def assess_via_node(wav_path, reference_words, poll_timeout=180):
     except Exception as e:
         print(f"scoring node failed, falling back: {e}")
         return None
+    finally:
+        if mp3:
+            try: os.remove(mp3)
+            except OSError: pass

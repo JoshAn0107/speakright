@@ -573,8 +573,9 @@ class PronunciationService:
                 return None
             converted = self._convert_to_azure_format(audio_file_path)
             try:
+                # 连读优先境内节点(能扛长音频);节点不可用再本地讯飞(仅≤20词稳)
                 r = xf_ise_service.assess_via_node(converted, reference_words)
-                if r is None:
+                if r is None and len(reference_words) <= 20:
                     r = xf_ise_service.assess_words(converted, reference_words)
             finally:
                 try:
