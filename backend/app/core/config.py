@@ -22,6 +22,14 @@ class Settings(BaseSettings):
     AZURE_SPEECH_KEY: Optional[str] = None
     AZURE_REGION: Optional[str] = None
 
+    # 讯飞语音评测(ISE)
+    XF_APPID: Optional[str] = None
+    XF_API_KEY: Optional[str] = None
+    XF_API_SECRET: Optional[str] = None
+
+    # 影子/降级 ML 模型地址
+    SHADOW_ML_URL: Optional[str] = None
+
     # File Storage
     UPLOAD_DIR: str = "uploads"
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB

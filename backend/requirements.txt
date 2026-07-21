@@ -21,3 +21,4 @@ pytest-cov==4.1.0
 hypothesis==6.150.2
 openpyxl==3.1.5
 cmudict==1.1.1
+websocket-client==1.7.0

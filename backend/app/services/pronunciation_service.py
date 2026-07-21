@@ -86,6 +86,11 @@ class PronunciationService:
         Returns:
             dict with assessment results or None if service not configured
         """
+        # 讯飞语音评测优先：国内节点、独立额度、少儿优化，不受 Azure 跨境/配额影响
+        xf_result = self._try_xfyun(audio_file_path, reference_text)
+        if xf_result is not None:
+            return xf_result
+
         if not self.enabled:
             # Return mock data for development/testing
             return self._get_mock_assessment(reference_text)
@@ -559,6 +564,29 @@ class PronunciationService:
         score = max(0.0, min(100.0, round(score, 1)))
         result["pronunciation_score"] = score
         return result
+
+    def _try_xfyun(self, audio_file_path: str, reference_text: str):
+        """讯飞评测（主）。返回评分 dict；未配置/失败/乱读被拒时返回 None 走 Azure。"""
+        try:
+            from app.services import xf_ise_service
+            if not xf_ise_service.available():
+                return None
+            converted = self._convert_to_azure_format(audio_file_path)
+            try:
+                r = xf_ise_service.assess_word(converted, reference_text)
+            finally:
+                try:
+                    if converted and converted != audio_file_path and os.path.exists(converted):
+                        os.remove(converted)
+                except OSError:
+                    pass
+            # 乱读被判 reject（可能误判）→ 回退 Azure 复核
+            if not r or r.get("rejected"):
+                return None
+            return r
+        except Exception as e:
+            print(f"xfyun scoring failed, falling back: {e}")
+            return None
 
     def _gop_fallback(self, wav_path: str, reference_text: str):
         """Score with the self-hosted GOP model when Azure is unavailable."""

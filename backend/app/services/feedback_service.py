@@ -80,6 +80,23 @@ class FeedbackService:
         # Prosody: point out stress/intonation problems explicitly
         prosody_score = assessment_result.get('prosody_score')
 
+        if assessment_result.get('scorer') == 'xfyun':
+            omitted = [w['word'] for w in assessment_result.get('words', []) if w.get('error_type') == 'Omission']
+            if assessment_result.get('rejected'):
+                feedback_parts.append(f"⚠️ 没听清你读的是不是“{word_text}”，请靠近麦克风重读。")
+            elif omitted:
+                feedback_parts.append(f"⚠️ 漏读了：{'、'.join(omitted[:8])}。")
+            grade = FeedbackService._calculate_grade(pronunciation_score)
+            if pronunciation_score >= 85:
+                feedback_parts.append(f"“{word_text}”发音很棒！🌟")
+            elif pronunciation_score >= 70:
+                feedback_parts.append(f"“{word_text}”不错，继续保持！")
+            elif pronunciation_score >= 60:
+                feedback_parts.append(f"“{word_text}”还可以，多听示范再练几遍。")
+            else:
+                feedback_parts.append(f"“{word_text}”需要加强，跟着示范一个音一个音地读。")
+            return {"feedback_text": " ".join(feedback_parts), "grade": grade, "is_automated": True}
+
         # Recognized text mismatch: the strongest signal that the wrong word was read
         if assessment_result.get('text_match') is False:
             recognized = (assessment_result.get('heard_text') or assessment_result.get('recognized_text') or '').strip().rstrip('.')
