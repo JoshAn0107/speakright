@@ -36,7 +36,7 @@ function ContinuousTest({ assignment, onBack }) {
   }, [assignment.id]);
 
   const words = (details?.words || []).slice().sort((a, b) => a.order_index - b.order_index);
-  const timeLimit = Math.max(30, words.length * 4); // 每词4秒，至少30秒
+  const timeLimit = Math.min(90, Math.max(30, words.length * 3)); // 每词3秒，硬上限90秒(超时讯飞评不了)
 
   const cleanup = () => {
     if (processorRef.current) { processorRef.current.disconnect(); processorRef.current = null; }
